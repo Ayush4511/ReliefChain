@@ -1043,10 +1043,20 @@ def live_data_generator():
     """Simulates real-time incoming donations to make the platform feel alive."""
     while True:
         time.sleep(random.randint(5, 15))
-        donors = ["Anonymous donor", "Blockchain Vault", "Relief Angel", "Tech Titans", "Global Aid"]
+        donors = ["Rahul Sharma", "Priya Desai", "Amit Kumar", "Neha Singh", "Vikram Patel", "Anjali Gupta", "Rohan Mehta", "Suresh Reddy", "Kavita Rao", "Global Aid", "Anonymous Donor"]
+        campaigns = ["Flood Relief Fund", "Earthquake Rebuild", "Medical Aid for Orphans"]
         amount = random.randint(1, 50) * 1000
-        msg = f"✨ New donation of ₹{amount:,} received from {random.choice(donors)}!"
-        socketio.emit('new_donation', {'message': msg})
+        
+        payload = {
+            'tx_id': f"TX{random.randint(4000,9999)}",
+            'donor': random.choice(donors),
+            'amount': amount,
+            'campaign': random.choice(campaigns),
+            'beneficiary': 'Pending Assignment',
+            'hash': f"0x{hashlib.sha256(str(time.time()).encode()).hexdigest()[:12]}...",
+            'timestamp': datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        }
+        socketio.emit('new_donation', payload)
 
 # ─────────────────────────────────────────────
 # MAIN
