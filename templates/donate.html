@@ -111,20 +111,48 @@ document.querySelectorAll('.pm-radio').forEach(r => {
 });
 // Default highlight UPI
 document.querySelector('.pm-radio:checked')?.dispatchEvent(new Event('change'));
-// Form submit → show modal
-document.getElementById('donateForm').addEventListener('submit', function(e) {
+// Form submit → AJAX fetch & show modal
+document.getElementById('donateForm').addEventListener('submit', async function(e) {
+    e.preventDefault(); // Prevent instant redirect
     const amt = document.getElementById('amountInput').value;
     if (!amt || parseInt(amt) <= 0) return;
+    
     document.getElementById('paymentModal').style.display = 'flex';
-    setTimeout(() => {
-        document.getElementById('step-processing').style.display = 'none';
-        document.getElementById('step-blockchain').style.display = 'block';
-    }, 1500);
-    setTimeout(() => {
-        document.getElementById('step-blockchain').style.display = 'none';
-        document.getElementById('step-success').style.display = 'block';
-    }, 3000);
-    // Let the form submit naturally after delay
+    
+    try {
+        const formData = new FormData(this);
+        // Add header to tell Flask we want JSON back
+        const response = await fetch(this.action, { 
+            method: 'POST', 
+            body: formData,
+            headers: { 'Accept': 'application/json' }
+        });
+        
+        const data = await response.json();
+        
+        if(data.status === 'success') {
+            setTimeout(() => {
+                document.getElementById('step-processing').style.display = 'none';
+                document.getElementById('step-blockchain').style.display = 'block';
+            }, 1000);
+            
+            setTimeout(() => {
+                document.getElementById('step-blockchain').style.display = 'none';
+                document.getElementById('step-success').style.display = 'block';
+            }, 2500);
+            
+            // Redirect to tracking page after 5 seconds (gives time for toast to be seen)
+            setTimeout(() => {
+                window.location.href = '/track?tx_id=' + data.tx_id;
+            }, 5500);
+        } else {
+            // Fallback if failed
+            window.location.reload();
+        }
+    } catch(err) {
+        console.error(err);
+        window.location.reload();
+    }
 });
 </script>
 {% endblock %}

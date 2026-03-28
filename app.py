@@ -149,6 +149,13 @@ def init_db():
                 ('COVID Emergency India', 'Medical supplies, oxygen & food support for COVID-affected families', 10000000, 9200000, 5600, 'Pan India', 'Medical', 'active', '🏥'),
                 ('Assam Drought Aid', 'Water purification & agricultural support for drought-hit Assam regions', 2000000, 450000, 320, 'Assam', 'Drought', 'active', '🌾'),
                 ('Uttarakhand Landslide Relief', 'Rescue, evacuation & rehabilitation for landslide victims', 4000000, 4000000, 980, 'Uttarakhand', 'Landslide', 'completed', '⛰️'),
+                # NGO Partners
+                ('PM-CARES Fund', 'Government emergency relief fund for disaster response across India', 50000000, 32500000, 18500, 'Pan India', 'Emergency Relief', 'active', '🏛️'),
+                ('Goonj', 'Disaster relief, livelihood support and rural development across India', 10000000, 6200000, 4200, 'Pan India', 'Disaster Relief', 'active', '👕'),
+                ('CARE India', 'Health, women empowerment and humanitarian aid for vulnerable communities', 25000000, 18700000, 9800, 'Pan India', 'Health', 'active', '❤️'),
+                ('HelpAge India', 'Elderly care, pension support and healthcare for senior citizens', 8000000, 4100000, 3200, 'Pan India', 'Elderly Care', 'active', '🧓'),
+                ('SEEDS India', 'Disaster preparedness, resilience building and community recovery programs', 6000000, 2800000, 1500, 'Pan India', 'Disaster Preparedness', 'active', '🌱'),
+                ('CRY', 'Child rights, education and protection for underprivileged children', 12000000, 7600000, 5400, 'Pan India', 'Child Rights', 'active', '👶'),
             ]
             for camp in campaigns:
                 c.execute("INSERT INTO campaigns (name, description, target_amount, raised_amount, beneficiary_count, region, category, status, image_icon) VALUES (?,?,?,?,?,?,?,?,?)", camp)
@@ -496,9 +503,27 @@ def donate():
                   ('donation_received', 'donation', campaign_id, donor_name, f"₹{amount} donated to {camp_name}"))
         db.commit()
 
+        # Real-time WebSockets broadcast of the actual database transaction
+        socketio.emit('new_donation', {
+            'tx_id': tx_id,
+            'donor': donor_name,
+            'amount': amount,
+            'campaign': camp_name,
+            'beneficiary': beneficiary,
+            'hash': f"0x{block_hash[:12]}...",
+            'timestamp': datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        })
+
+        if request.headers.get('Accept') == 'application/json' or request.is_json:
+            return jsonify({'status': 'success', 'tx_id': tx_id})
+
         flash(f'✅ Donation Successful! TX ID: {tx_id}', 'success')
         return redirect(url_for('track_donation', tx_id=tx_id))
     return render_template('donate.html', campaigns=campaigns)
+
+
+
+
 
 @app.route('/campaigns')
 def campaigns():
@@ -1041,8 +1066,9 @@ def handle_connect():
 # ─────────────────────────────────────────────
 def live_data_generator():
     """Simulates real-time incoming donations to make the platform feel alive."""
+    import time, random, hashlib
     while True:
-        time.sleep(random.randint(5, 15))
+        time.sleep(random.randint(5, 12))
         donors = ["Rahul Sharma", "Priya Desai", "Amit Kumar", "Neha Singh", "Vikram Patel", "Anjali Gupta", "Rohan Mehta", "Suresh Reddy", "Kavita Rao", "Global Aid", "Anonymous Donor"]
         campaigns = ["Flood Relief Fund", "Earthquake Rebuild", "Medical Aid for Orphans"]
         amount = random.randint(1, 50) * 1000
@@ -1064,6 +1090,7 @@ def live_data_generator():
 if __name__ == '__main__':
     init_db()
     # Start live data thread
+    import threading
     t = threading.Thread(target=live_data_generator, daemon=True)
     t.start()
     socketio.run(app, debug=True, port=5000, use_reloader=False, allow_unsafe_werkzeug=True)
