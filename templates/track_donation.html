@@ -1,0 +1,59 @@
+{% extends 'base.html' %}
+{% block title %}Track Donation — ReliefChain{% endblock %}
+{% block content %}
+<div class="container" style="max-width:700px;padding-top:3rem;">
+    <h1 class="page-title">🔍 Track Your Donation</h1>
+    <div class="card" style="margin-top:1.5rem;margin-bottom:2rem;">
+        <form method="POST" action="{{ url_for('track_donation') }}">
+            <div class="form-group">
+                <label class="form-label">Transaction ID</label>
+                <input type="text" name="tx_id" class="form-control" placeholder="RC-XXXXXXXXXX" value="{{ tx_id or '' }}" required>
+                <div class="form-hint">Find your TX ID in the confirmation email or donation receipt.</div>
+            </div>
+            <button type="submit" class="btn btn-primary btn-block">Track →</button>
+        </form>
+    </div>
+
+    {% if donation %}
+    <div class="card">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.5rem;">
+            <div>
+                <div class="text-sm text-muted mb-1">Transaction ID</div>
+                <div class="font-mono" style="font-weight:700;">{{ donation.tx_id }}</div>
+            </div>
+            <span class="badge badge-success" style="padding:0.5rem 1rem;">✅ Verified on Blockchain</span>
+        </div>
+
+        <div style="background:var(--success-light);border-radius:var(--radius-sm);padding:1.25rem;margin-bottom:1.5rem;text-align:center;">
+            <div class="text-sm text-muted mb-1">Amount Donated</div>
+            <div style="font-size:2.5rem;font-weight:900;color:var(--success);">₹{{ '{:,.0f}'.format(donation.amount) }}</div>
+        </div>
+
+        <div class="grid-2" style="margin-bottom:1.5rem;">
+            <div><div class="text-sm text-muted mb-1">Donor</div><div style="font-weight:600;">{{ donation.donor_name }}</div></div>
+            <div><div class="text-sm text-muted mb-1">Campaign</div><div style="font-weight:600;">{{ donation.campaign_name or '—' }}</div></div>
+            <div><div class="text-sm text-muted mb-1">Beneficiary</div><div style="font-weight:600;">{{ donation.beneficiary }}</div></div>
+            <div><div class="text-sm text-muted mb-1">Payment Method</div><div style="font-weight:600;">{{ donation.payment_method }}</div></div>
+            <div><div class="text-sm text-muted mb-1">Timestamp</div><div style="font-weight:600;">{{ donation.timestamp }}</div></div>
+            <div><div class="text-sm text-muted mb-1">Status</div><span class="badge badge-success">{{ donation.status|capitalize }}</span></div>
+        </div>
+
+        {% if ledger_entry %}
+        <div class="divider"></div>
+        <div class="text-sm text-muted" style="text-transform:uppercase;letter-spacing:0.05em;margin-bottom:0.75rem;">⛓️ Blockchain Verification</div>
+        <div class="block-hash" style="word-break:break-all;padding:0.75rem;font-size:0.8rem;">{{ ledger_entry.hash }}</div>
+        <div class="hash-verified" style="margin-top:0.5rem;">✅ SHA-256 hash matches — transaction is authentic</div>
+        <div style="margin-top:1rem;">
+            <a href="{{ url_for('transaction_detail', tx_id=donation.tx_id) }}" class="btn btn-outline btn-sm">View Full Block Details →</a>
+        </div>
+        {% endif %}
+    </div>
+    {% elif tx_id %}
+    <div class="card" style="text-align:center;padding:3rem;">
+        <div style="font-size:3rem;margin-bottom:1rem;">❌</div>
+        <h3>Transaction Not Found</h3>
+        <p class="text-muted">No record with ID <strong>{{ tx_id }}</strong>.</p>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

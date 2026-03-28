@@ -1,0 +1,41 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container" style="max-width: 600px;">
+    <div class="card">
+        <h2 class="section-title" style="margin-bottom: 2rem; font-size: 1.75rem;">Beneficiary Registration</h2>
+        <p class="text-muted mb-4 text-center">Register to receive verified relief funding. Submissions are verified through our AI deduplication system.</p>
+        
+        <form method="POST" action="{{ url_for('beneficiary') }}" enctype="multipart/form-data">
+            <div class="form-group">
+                <label for="name">Full Name</label>
+                <input type="text" id="name" name="name" class="form-control" required placeholder="Ramesh Kumar">
+            </div>
+            
+            <div class="form-group">
+                <label for="aadhaar">Aadhaar Number <span style="font-size: 0.8rem; color: var(--error); margin-left: 0.5rem;" title="12-digit exact match checked for fraud detection."><i class="fa-solid fa-triangle-exclamation"></i> Fraud Check</span></label>
+                <input type="text" id="aadhaar" name="aadhaar" class="form-control" required placeholder="1234 5678 9012" pattern="\d{12}" title="Must be a 12-digit number">
+            </div>
+
+            <div class="form-group">
+                <label for="phone">Phone Number</label>
+                <input type="tel" id="phone" name="phone" class="form-control" required placeholder="9876543210" pattern="\d{10}">
+            </div>
+            
+            <div class="form-group">
+                <label for="location">Location / District</label>
+                <input type="text" id="location" name="location" class="form-control" required placeholder="e.g. Kerala">
+            </div>
+
+            <div class="form-group" style="margin-bottom: 2rem;">
+                <label for="id_doc">Upload ID Document (Optional image)</label>
+                <input type="file" id="id_doc" name="id_doc" class="form-control" accept="image/*,application/pdf" style="padding: 0.5rem;">
+            </div>
+            
+            <button type="submit" class="btn btn-primary btn-block" style="font-size: 1.1rem; padding: 1rem;">
+                <i class="fa-solid fa-address-card"></i> Submit Registration
+            </button>
+        </form>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,42 @@
+{% extends 'base.html' %}
+{% block title %}Donor Profile — ReliefChain{% endblock %}
+{% block content %}
+<div class="container" style="padding-top:2.5rem;max-width:900px;">
+    <div class="grid-2">
+        <div class="card" style="text-align:center;padding:2rem;">
+            <div style="width:80px;height:80px;background:linear-gradient(135deg,var(--accent),#818CF8);border-radius:50%;margin:0 auto 1rem;display:flex;align-items:center;justify-content:center;font-size:2rem;color:#fff;">
+                {{ user.name[0].upper() if user else '?' }}
+            </div>
+            <h2 style="font-size:1.25rem;font-weight:800;">{{ user.name }}</h2>
+            <p class="text-muted text-sm">{{ user.email }}</p>
+            <p class="text-sm" style="margin-top:0.25rem;">📱 {{ user.phone or 'No phone' }}</p>
+            <div style="margin-top:1rem;"><span class="badge badge-primary">💳 Donor</span></div>
+            <div style="margin-top:1.5rem;">
+                <div style="font-size:2rem;font-weight:900;color:var(--success);">₹{{ '{:,.0f}'.format(total) }}</div>
+                <div class="text-sm text-muted">Total Donated</div>
+            </div>
+            <div style="margin-top:1.5rem;display:flex;gap:0.75rem;justify-content:center;">
+                <a href="{{ url_for('donate') }}" class="btn btn-primary btn-sm">❤️ Donate Again</a>
+                <a href="{{ url_for('donation_history') }}" class="btn btn-outline btn-sm">History</a>
+            </div>
+        </div>
+        <div class="card">
+            <div class="card-header"><span class="card-title">Recent Donations</span><a href="{{ url_for('donation_history') }}" style="color:var(--accent);font-size:0.85rem;">View All →</a></div>
+            {% for d in my_donations[:5] %}
+            <div style="display:flex;justify-content:space-between;align-items:center;padding:0.75rem 0;border-bottom:1px solid var(--border);">
+                <div>
+                    <div style="font-weight:600;font-size:0.875rem;">{{ d.campaign_name or 'General Relief' }}</div>
+                    <div class="text-muted text-sm">{{ d.tx_id }} • {{ d.timestamp[:10] }}</div>
+                </div>
+                <div style="text-align:right;">
+                    <div style="color:var(--success);font-weight:700;">₹{{ '{:,.0f}'.format(d.amount) }}</div>
+                    <a href="{{ url_for('track_donation') }}?tx_id={{ d.tx_id }}" class="text-sm" style="color:var(--accent);">Track</a>
+                </div>
+            </div>
+            {% else %}
+            <div class="text-center text-muted" style="padding:2rem;">No donations yet. <a href="{{ url_for('donate') }}" style="color:var(--accent);">Donate now →</a></div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endblock %}

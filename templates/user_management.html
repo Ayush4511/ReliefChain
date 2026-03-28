@@ -1,0 +1,32 @@
+{% extends 'admin_base.html' %}
+{% block title %}User Management — ReliefChain Admin{% endblock %}
+{% block content %}
+<div class="page-header">
+    <h1 class="page-title">User Management</h1>
+    <span class="badge badge-muted" style="font-size:0.85rem;padding:0.5rem 1rem;">{{ users|length }} users</span>
+</div>
+<div class="card" style="padding:0;">
+    <div class="table-wrap" style="border:none;">
+        <table>
+            <thead><tr><th>Name</th><th>Email</th><th>Phone</th><th>Role</th><th>Joined</th></tr></thead>
+            <tbody>
+                {% for u in users %}
+                <tr>
+                    <td><strong>{{ u.name }}</strong></td>
+                    <td>{{ u.email }}</td>
+                    <td>{{ u.phone or '—' }}</td>
+                    <td>
+                        <span class="badge badge-{% if u.role=='admin' %}danger{% elif u.role=='donor' %}primary{% else %}success{% endif %}">
+                            {% if u.role=='admin' %}⚙️{% elif u.role=='donor' %}💳{% else %}🆘{% endif %} {{ u.role|capitalize }}
+                        </span>
+                    </td>
+                    <td class="text-sm text-muted">{{ u.created_at[:10] }}</td>
+                </tr>
+                {% else %}
+                <tr><td colspan="5" class="text-center text-muted" style="padding:2rem;">No users found</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

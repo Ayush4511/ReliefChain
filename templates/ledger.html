@@ -1,0 +1,68 @@
+{% extends 'base.html' %}
+{% block title %}Blockchain Ledger — ReliefChain{% endblock %}
+{% block content %}
+<div class="container" style="padding-top:2rem;">
+    <div class="page-header">
+        <div>
+            <h1 class="page-title">Blockchain Transaction Ledger</h1>
+            <p class="text-muted text-sm">Immutable SHA-256 verified chain — {{ blocks|length }} blocks live</p>
+        </div>
+        <div class="live-badge"><span class="live-dot"></span> AUTO-UPDATING</div>
+    </div>
+
+    <div class="card" style="margin-bottom:2rem;padding:1.25rem;background:linear-gradient(135deg,var(--primary),#1E1B4B);color:#fff;">
+        <div style="display:flex;gap:2rem;flex-wrap:wrap;">
+            <div><div style="font-size:0.75rem;color:#94A3B8;text-transform:uppercase;letter-spacing:0.05em;">Chain Integrity</div><div style="font-size:1.25rem;font-weight:800;">✅ Verified</div></div>
+            <div><div style="font-size:0.75rem;color:#94A3B8;text-transform:uppercase;letter-spacing:0.05em;">Total Blocks</div><div style="font-size:1.25rem;font-weight:800;">{{ blocks|length }}</div></div>
+            <div><div style="font-size:0.75rem;color:#94A3B8;text-transform:uppercase;letter-spacing:0.05em;">Hash Algorithm</div><div style="font-size:1.25rem;font-weight:800;">SHA-256</div></div>
+            <div><div style="font-size:0.75rem;color:#94A3B8;text-transform:uppercase;letter-spacing:0.05em;">Consensus</div><div style="font-size:1.25rem;font-weight:800;">Proof of Donation</div></div>
+        </div>
+    </div>
+
+    <!-- Live Ledger Feed -->
+    <div class="card" style="padding:0;">
+        <div style="padding:1.25rem;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;">
+            <span class="card-title">⛓️ Transaction Blocks</span>
+            <div style="display:flex;gap:0.5rem;">
+                <a href="{{ url_for('hash_viewer') }}" class="btn btn-outline btn-sm">🔍 Hash Viewer</a>
+                <a href="{{ url_for('analytics') }}" class="btn btn-outline btn-sm">📊 Analytics</a>
+            </div>
+        </div>
+        <div class="table-wrap" style="border-radius:0;border:none;">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Block #</th>
+                        <th>TX ID</th>
+                        <th>From</th>
+                        <th>To</th>
+                        <th>Campaign</th>
+                        <th>Amount</th>
+                        <th>Hash</th>
+                        <th>Timestamp</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody id="live-feed-tbody">
+                    {% for b in blocks %}
+                    <tr>
+                        <td><span class="badge badge-primary">#{{ b.block_number }}</span></td>
+                        <td class="td-mono" style="font-size:0.78rem;">{{ b.tx_id }}</td>
+                        <td><strong>{{ b.from_entity }}</strong></td>
+                        <td class="text-muted">{{ b.to_entity }}</td>
+                        <td class="text-sm">{{ b.campaign }}</td>
+                        <td style="color:var(--success);font-weight:700;">₹{{ '{:,.0f}'.format(b.amount) }}</td>
+                        <td>
+                            <span class="block-hash" title="{{ b.hash }}">{{ b.hash[:18] }}...</span>
+                            <span class="hash-verified" style="font-size:0.7rem;display:block;margin-top:0.2rem;">✅ Verified</span>
+                        </td>
+                        <td class="text-sm text-muted">{{ b.timestamp[:16] }}</td>
+                        <td><a href="{{ url_for('transaction_detail', tx_id=b.tx_id) }}" class="btn btn-outline btn-sm">View</a></td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,40 @@
+{% extends 'base.html' %}
+{% block title %}Donation History — ReliefChain{% endblock %}
+{% block content %}
+<div class="container" style="padding-top:2.5rem;">
+    <div class="page-header">
+        <h1 class="page-title">My Donation History</h1>
+        <span class="badge badge-muted" style="font-size:0.85rem;padding:0.5rem 1rem;">{{ total_rows }} donations</span>
+    </div>
+    <div class="card" style="padding:0;">
+        <div class="table-wrap" style="border:none;">
+            <table>
+                <thead><tr><th>TX ID</th><th>Campaign</th><th>Amount</th><th>Beneficiary</th><th>Method</th><th>Status</th><th>Date</th><th></th></tr></thead>
+                <tbody>
+                    {% for d in donations %}
+                    <tr>
+                        <td class="td-mono" style="font-size:0.78rem;">{{ d.tx_id }}</td>
+                        <td>{{ d.campaign_name or 'General Relief' }}</td>
+                        <td style="color:var(--success);font-weight:700;">₹{{ '{:,.0f}'.format(d.amount) }}</td>
+                        <td class="text-sm">{{ d.beneficiary or '—' }}</td>
+                        <td><span class="badge badge-muted">{{ d.payment_method }}</span></td>
+                        <td><span class="badge badge-success">{{ d.status }}</span></td>
+                        <td class="text-sm text-muted">{{ d.timestamp[:10] }}</td>
+                        <td><a href="{{ url_for('track_donation') }}?tx_id={{ d.tx_id }}" class="btn btn-outline btn-sm">Track</a></td>
+                    </tr>
+                    {% else %}
+                    <tr><td colspan="8" class="text-center text-muted" style="padding:3rem;">No donations yet. <a href="{{ url_for('donate') }}" style="color:var(--accent);">Donate now →</a></td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% if total_pages > 1 %}
+        <div style="padding:1rem;display:flex;gap:0.5rem;justify-content:center;">
+            {% for p in range(1, total_pages+1) %}
+            <a href="?page={{ p }}" class="btn {% if p==page %}btn-primary{% else %}btn-outline{% endif %} btn-sm">{{ p }}</a>
+            {% endfor %}
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Admin — ReliefChain{% endblock %}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+</head>
+<body>
+<nav class="navbar">
+    <div class="logo"><a href="{{ url_for('index') }}">Relief<span>Chain</span> <span style="font-size:0.75rem;background:rgba(239,68,68,0.2);color:#EF4444;padding:0.2rem 0.5rem;border-radius:4px;margin-left:0.5rem;font-weight:700;">ADMIN</span></a></div>
+    <ul class="nav-links">
+        <li><a href="{{ url_for('index') }}">← Public Site</a></li>
+        <li class="nav-user">👤 {{ session.get('user_name', 'Admin') }}</li>
+        <li><a href="{{ url_for('logout') }}">Logout</a></li>
+    </ul>
+    <div class="live-badge"><span class="live-dot"></span> ADMIN LIVE</div>
+</nav>
+{% with messages = get_flashed_messages(with_categories=true) %}
+{% if messages %}
+<div class="flash-messages">
+    {% for category, message in messages %}
+    <div class="flash {{ category }}">{% if category=='success' %}✅{% else %}⚠️{% endif %} {{ message }}</div>
+    {% endfor %}
+</div>
+<script>setTimeout(() => { document.querySelectorAll('.flash').forEach(f=>f.style.display='none'); }, 5000);</script>
+{% endif %}
+{% endwith %}
+<div class="admin-layout">
+    <aside class="sidebar">
+        <div style="padding:1.5rem 1.25rem;border-bottom:1px solid rgba(255,255,255,0.08);">
+            <div style="font-size:0.8rem;color:#94A3B8;margin-bottom:0.25rem;">Logged in as</div>
+            <div style="color:#fff;font-weight:700;font-size:0.9rem;">{{ session.get('user_name','Admin') }}</div>
+        </div>
+        <div class="sidebar-section">Overview</div>
+        <a href="{{ url_for('admin_dashboard') }}" class="sidebar-link {% if request.endpoint=='admin_dashboard' %}active{% endif %}"><span class="icon">📊</span> Dashboard</a>
+        <div class="sidebar-section">Operations</div>
+        <a href="{{ url_for('manage_donations') }}" class="sidebar-link {% if request.endpoint=='manage_donations' %}active{% endif %}"><span class="icon">💳</span> Manage Donations</a>
+        <a href="{{ url_for('verify_beneficiaries') }}" class="sidebar-link {% if request.endpoint=='verify_beneficiaries' %}active{% endif %}"><span class="icon">✅</span> Verify Beneficiaries</a>
+        <a href="{{ url_for('fraud_detection') }}" class="sidebar-link {% if request.endpoint=='fraud_detection' %}active{% endif %}"><span class="icon">🤖</span> Fraud Detection</a>
+        <a href="{{ url_for('campaign_management') }}" class="sidebar-link {% if request.endpoint=='campaign_management' %}active{% endif %}"><span class="icon">🎯</span> Campaigns</a>
+        <div class="sidebar-section">Management</div>
+        <a href="{{ url_for('user_management') }}" class="sidebar-link {% if request.endpoint=='user_management' %}active{% endif %}"><span class="icon">👥</span> Users</a>
+        <a href="{{ url_for('audit_trail') }}" class="sidebar-link {% if request.endpoint=='audit_trail' %}active{% endif %}"><span class="icon">📋</span> Audit Trail</a>
+        <div class="sidebar-section">Transparency</div>
+        <a href="{{ url_for('ledger') }}" class="sidebar-link"><span class="icon">⛓️</span> Blockchain Ledger</a>
+        <a href="{{ url_for('analytics') }}" class="sidebar-link"><span class="icon">📈</span> Analytics</a>
+    </aside>
+    <main class="admin-content">{% block content %}{% endblock %}</main>
+</div>
+<script>
+const socket = io();
+socket.on('new_donation', (data) => {
+    const c = document.getElementById('live-txcount');
+    if(c){ const v = parseInt(c.dataset.val||0)+1; c.dataset.val=v; c.textContent=v; }
+    const t = document.getElementById('live-total');
+    if(t){ const v = parseInt(t.dataset.val||0)+data.amount; t.dataset.val=v; t.textContent='₹'+v.toLocaleString('en-IN'); }
+    const feed = document.getElementById('live-feed-tbody');
+    if(feed){
+        const row=document.createElement('tr');row.className='row-new';
+        row.innerHTML=`<td class="td-mono">${data.tx_id}</td><td><strong>${data.donor}</strong></td><td style="color:var(--success);font-weight:700;">₹${data.amount.toLocaleString('en-IN')}</td><td>${data.campaign}</td><td>${data.beneficiary}</td><td><span class="badge badge-success">Completed</span></td><td class="text-sm text-muted">${data.timestamp}</td>`;
+        feed.prepend(row);if(feed.rows.length>15)feed.deleteRow(feed.rows.length-1);
+    }
+});
+</script>
+{% block scripts %}{% endblock %}
+</body>
+</html>

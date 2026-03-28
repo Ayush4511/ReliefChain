@@ -1,0 +1,50 @@
+{% extends 'base.html' %}
+{% block title %}Region-wise Distribution — ReliefChain{% endblock %}
+{% block content %}
+<div class="container" style="padding-top:2.5rem;">
+    <div class="page-header">
+        <h1 class="page-title">🗺️ Region-wise Distribution</h1>
+        <a href="{{ url_for('analytics') }}" class="btn btn-outline btn-sm">Full Analytics →</a>
+    </div>
+    <div class="grid-2">
+        <div class="card">
+            <div class="card-header"><span class="card-title">State-wise Beneficiaries & Aid</span></div>
+            <div class="table-wrap" style="border:none;">
+                <table>
+                    <thead><tr><th>State</th><th>Beneficiaries</th><th>Aid Disbursed</th><th>Fraud</th></tr></thead>
+                    <tbody>
+                        {% for r in regions %}
+                        <tr>
+                            <td><strong>{{ r.state }}</strong></td>
+                            <td>{{ r.ben_count }}</td>
+                            <td style="color:var(--success);font-weight:600;">₹{{ '{:,.0f}'.format(r.aid_total or 0) }}</td>
+                            <td>{% if r.fraud_count %}<span class="badge badge-danger">{{ r.fraud_count }}</span>{% else %}<span class="badge badge-success">0</span>{% endif %}</td>
+                        </tr>
+                        {% else %}
+                        <tr><td colspan="4" class="text-center text-muted">No data yet</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <div class="card">
+            <div class="card-header"><span class="card-title">Campaign Region Donations</span></div>
+            <div class="table-wrap" style="border:none;">
+                <table>
+                    <thead><tr><th>Region</th><th>Total Donated</th></tr></thead>
+                    <tbody>
+                        {% for r in campaign_regions %}
+                        <tr>
+                            <td><strong>{{ r.region }}</strong></td>
+                            <td style="color:var(--accent);font-weight:600;">₹{{ '{:,.0f}'.format(r.donated or 0) }}</td>
+                        </tr>
+                        {% else %}
+                        <tr><td colspan="2" class="text-center text-muted">No data yet</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

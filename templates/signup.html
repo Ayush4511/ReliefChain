@@ -1,0 +1,45 @@
+{% extends 'base.html' %}
+{% block title %}Sign Up — ReliefChain{% endblock %}
+{% block content %}
+<div class="auth-wrapper">
+    <div class="auth-card" style="max-width:520px;">
+        <div class="auth-logo">
+            <h2>Create Account</h2>
+            <p>Join thousands of donors making a difference</p>
+        </div>
+        <form method="POST" action="{{ url_for('signup') }}">
+            <div class="form-row">
+                <div class="form-group">
+                    <label class="form-label">Full Name</label>
+                    <input type="text" name="name" class="form-control" placeholder="Arjun Sharma" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Phone Number</label>
+                    <input type="tel" name="phone" class="form-control" placeholder="9XXXXXXXXX">
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Email Address</label>
+                <input type="email" name="email" class="form-control" placeholder="you@example.com" required>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Password</label>
+                <input type="password" name="password" class="form-control" placeholder="At least 8 characters" required>
+            </div>
+            <div class="form-group">
+                <label class="form-label">I am a...</label>
+                <select name="role" class="form-control" required>
+                    <option value="donor">💳 Donor — I want to contribute</option>
+                    <option value="beneficiary">🆘 Beneficiary — I need assistance</option>
+                </select>
+            </div>
+            <button type="submit" class="btn btn-primary btn-block" style="margin-top:0.5rem;">Create Account →</button>
+        </form>
+        <div class="auth-divider">or</div>
+        <div style="text-align:center;font-size:0.875rem;">
+            <span class="text-muted">Already have an account?</span>
+            <a href="{{ url_for('login') }}" style="color:var(--accent);font-weight:600;"> Sign in</a>
+        </div>
+    </div>
+</div>
+{% endblock %}

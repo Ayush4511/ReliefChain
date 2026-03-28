@@ -1,0 +1,40 @@
+{% extends 'admin_base.html' %}
+{% block title %}Manage Donations — ReliefChain Admin{% endblock %}
+{% block content %}
+<div class="page-header">
+    <div>
+        <h1 class="page-title">Manage Donations</h1>
+        <p class="text-muted text-sm">{{ donations|length }} total records</p>
+    </div>
+    <div style="display:flex;gap:0.5rem;">
+        {% for s in ['all','completed','pending'] %}
+        <a href="?status={{ s }}" class="btn {% if status_filter==s %}btn-primary{% else %}btn-outline{% endif %} btn-sm">{{ s|capitalize }}</a>
+        {% endfor %}
+    </div>
+</div>
+<div class="card" style="padding:0;">
+    <div class="table-wrap" style="border:none;">
+        <table>
+            <thead><tr><th>TX ID</th><th>Donor</th><th>Email</th><th>Amount</th><th>Campaign</th><th>Beneficiary</th><th>Method</th><th>Status</th><th>Hash</th><th>Time</th></tr></thead>
+            <tbody id="live-feed-tbody">
+                {% for d in donations %}
+                <tr>
+                    <td class="td-mono" style="font-size:0.75rem;"><a href="{{ url_for('transaction_detail', tx_id=d.tx_id) }}" style="color:var(--accent);">{{ d.tx_id }}</a></td>
+                    <td><strong>{{ d.donor_name }}</strong></td>
+                    <td class="text-sm text-muted">{{ d.donor_email }}</td>
+                    <td style="color:var(--success);font-weight:700;">₹{{ '{:,.0f}'.format(d.amount) }}</td>
+                    <td class="text-sm">{{ d.campaign_name or '—' }}</td>
+                    <td class="text-sm">{{ d.beneficiary or '—' }}</td>
+                    <td><span class="badge badge-muted">{{ d.payment_method }}</span></td>
+                    <td><span class="badge badge-{% if d.status=='completed' %}success{% else %}warning{% endif %}">{{ d.status }}</span></td>
+                    <td class="td-mono" style="font-size:0.7rem;color:var(--text-muted);">{{ d.transaction_hash[:14] if d.transaction_hash else '—' }}...</td>
+                    <td class="text-sm text-muted">{{ d.timestamp[:16] }}</td>
+                </tr>
+                {% else %}
+                <tr><td colspan="10" class="text-center text-muted" style="padding:2rem;">No donations found</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

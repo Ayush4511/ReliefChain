@@ -1,0 +1,187 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+        <h2 class="section-title" style="margin-bottom: 0;">Admin Dashboard</h2>
+        <span class="badge badge-success"><i class="fa-solid fa-circle-check"></i> System Active</span>
+    </div>
+
+    <!-- Analytics Cards -->
+    <div class="stats-grid">
+        <div class="stat-card">
+            <span class="title">Total Donations</span>
+            <span class="value">₹{{ '{:,.2f}'.format(total_donations) }}</span>
+            <span style="color: var(--success); font-size: 0.8rem; font-weight: 600; margin-top: 0.5rem;"><i class="fa-solid fa-arrow-trend-up"></i> Growing</span>
+        </div>
+        <div class="stat-card">
+            <span class="title">Beneficiaries Verified</span>
+            <span class="value" style="color: var(--success);">{{ beneficiaries_verified }}</span>
+        </div>
+        <div class="stat-card">
+            <span class="title" style="color: var(--error);">Fraud Cases Prevented</span>
+            <span class="value" style="color: var(--error);">{{ fraud_cases }}</span>
+            <span style="font-size: 0.8rem; color: var(--text-muted); margin-top: 0.5rem;">Blocked by unique identifier algorithm</span>
+        </div>
+        <div class="stat-card">
+            <span class="title">Funds Distributed</span>
+            <span class="value">₹{{ '{:,.2f}'.format(funds_distributed) }}</span>
+        </div>
+    </div>
+
+    <!-- Chart and Table Section -->
+    <div style="display: grid; grid-template-columns: 1fr 2fr; gap: 2rem; margin-bottom: 2rem;">
+        <!-- Chart Section -->
+        <div class="card">
+            <h3 style="font-size: 1.1rem; margin-bottom: 1rem; color: var(--primary);">Donation Trends</h3>
+            <canvas id="donationChart" height="250"></canvas>
+        </div>
+        
+        <!-- Table Section -->
+        <div class="card" style="padding: 1.5rem;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                <h3 style="font-size: 1.1rem; color: var(--primary);">Recent Transactions Table</h3>
+                <a href="{{ url_for('ledger') }}" style="color: var(--accent); text-decoration: none; font-size: 0.9rem; font-weight: 600;">View Ledger <i class="fa-solid fa-arrow-right"></i></a>
+            </div>
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Block #</th>
+                            <th>Donor</th>
+                            <th>Amount</th>
+                            <th>Beneficiary</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for block in blocks[:5] %}
+                        <tr>
+                            <td style="font-weight: 600; font-family: monospace;">{{ block.block_number }}</td>
+                            <td>{{ block.donor_name }}</td>
+                            <td style="font-weight: 500;">₹{{ block.amount }}</td>
+                            <td>{{ block.beneficiary_name }}</td>
+                            <td><span class="badge badge-success">Verified</span></td>
+                        </tr>
+                        {% else %}
+                        <tr>
+                            <td colspan="5" class="text-center text-muted">No transactions found</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- New section: Top Donors & Recent Beneficiaries -->
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; margin-bottom: 2rem;">
+        <div class="card" style="padding: 1.5rem;">
+            <h3 style="font-size: 1.1rem; color: var(--primary); margin-bottom: 1rem;"><i class="fa-solid fa-ranking-star" style="color: var(--accent);"></i> Top Donors</h3>
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Donor</th>
+                            <th>Total Amount</th>
+                            <th>Donations</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for donor in top_donors %}
+                        <tr>
+                            <td style="font-weight: 500;">{{ donor.name }}</td>
+                            <td style="color: var(--success); font-weight: 600;">₹{{ '{:,.2f}'.format(donor.total_amount) }}</td>
+                            <td>{{ donor.donations_count }}</td>
+                        </tr>
+                        {% else %}
+                        <tr><td colspan="3" class="text-center text-muted">No donors yet</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        
+        <div class="card" style="padding: 1.5rem;">
+            <h3 style="font-size: 1.1rem; color: var(--primary); margin-bottom: 1rem;"><i class="fa-solid fa-users" style="color: var(--accent);"></i> Recent Beneficiaries</h3>
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Location</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for ben in recent_beneficiaries %}
+                        <tr>
+                            <td style="font-weight: 500;">{{ ben.name }}</td>
+                            <td>{{ ben.location }}</td>
+                            <td>
+                                {% if ben.is_fraud == 1 %}
+                                <span class="badge badge-error">Suspicious</span>
+                                {% else %}
+                                <span class="badge badge-success">Verified</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% else %}
+                        <tr><td colspan="3" class="text-center text-muted">No beneficiaries yet</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    const dates = {{ dates|tojson|safe }};
+    const amounts = {{ amounts|tojson|safe }};
+    
+    // Provide some default dummy trend if empty for visualization showcase
+    const displayDates = dates.length > 1 ? dates : ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+    const displayAmounts = amounts.length > 1 ? amounts : [1000, 2500, 1500, 4000, 1200, 3000, 2000];
+
+    const ctx = document.getElementById('donationChart').getContext('2d');
+    new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: displayDates,
+            datasets: [{
+                label: 'Donations (₹)',
+                data: displayAmounts,
+                borderColor: '#8B5CF6',
+                backgroundColor: 'rgba(139, 92, 246, 0.1)',
+                borderWidth: 2,
+                tension: 0.4,
+                fill: true,
+                pointBackgroundColor: '#1E1B4B',
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    display: false
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    grid: {
+                        color: '#E5E7EB'
+                    }
+                },
+                x: {
+                    grid: {
+                        display: false
+                    }
+                }
+            }
+        }
+    });
+</script>
+{% endblock %}

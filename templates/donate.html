@@ -1,0 +1,130 @@
+{% extends 'base.html' %}
+{% block title %}Donate — ReliefChain{% endblock %}
+{% block content %}
+<div class="container" style="max-width:680px;padding-top:3rem;padding-bottom:3rem;">
+    <div class="page-header" style="text-align:center;flex-direction:column;gap:0.5rem;">
+        <h1 class="page-title">Make a Donation ❤️</h1>
+        <p class="text-muted">100% transparent — every rupee tracked on the blockchain</p>
+    </div>
+
+    <div class="card">
+        <form method="POST" action="{{ url_for('donate') }}" id="donateForm">
+            <div class="form-row">
+                <div class="form-group">
+                    <label class="form-label">Your Name</label>
+                    <input type="text" name="name" class="form-control" placeholder="Arjun Sharma" value="{{ session.get('user_name','') }}" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Email Address</label>
+                    <input type="email" name="email" class="form-control" placeholder="you@example.com" value="{{ session.get('user_email','') }}" required>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Select Campaign</label>
+                <select name="campaign_id" class="form-control" id="campaignSelect" required>
+                    {% for c in campaigns %}
+                    <option value="{{ c.id }}" {% if request.args.get('campaign', '0')|int == c.id %}selected{% endif %}>
+                        {{ c.image_icon }} {{ c.name }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Donation Amount (₹)</label>
+                <div class="amount-presets">
+                    {% for amt in [500, 1000, 2000, 5000, 10000] %}
+                    <button type="button" class="amount-btn" onclick="setAmount({{ amt }})">₹{{ amt }}</button>
+                    {% endfor %}
+                    <button type="button" class="amount-btn" onclick="document.getElementById('amountInput').focus()">Custom</button>
+                </div>
+                <input type="number" name="amount" id="amountInput" class="form-control" placeholder="Enter amount" min="1" required>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Payment Method</label>
+                <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:0.75rem;">
+                    {% for method, icon in [('UPI','📱'),('Card','💳'),('NetBanking','🏦'),('Wallet','👛')] %}
+                    <label style="cursor:pointer;">
+                        <input type="radio" name="payment_method" value="{{ method }}" {% if method=='UPI' %}checked{% endif %} style="display:none;" class="pm-radio">
+                        <div class="pm-btn" style="border:2px solid var(--border);border-radius:8px;padding:0.75rem;text-align:center;transition:all 0.2s;">
+                            <div style="font-size:1.5rem;">{{ icon }}</div>
+                            <div style="font-size:0.8rem;font-weight:600;margin-top:0.25rem;">{{ method }}</div>
+                        </div>
+                    </label>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <div style="background:var(--accent-light);border-radius:8px;padding:1rem;margin-bottom:1.25rem;font-size:0.875rem;">
+                <strong>🔒 Secure & Transparent:</strong> Your donation will be assigned a SHA-256 transaction hash and recorded on the blockchain ledger instantly.
+            </div>
+
+            <button type="submit" class="btn btn-primary btn-block btn-lg" id="donateBtn">
+                ❤️ Donate Now — Powered by Blockchain
+            </button>
+        </form>
+    </div>
+
+    <div style="text-align:center;margin-top:1.5rem;font-size:0.85rem;color:var(--text-muted);">
+        Already donated?
+        <a href="{{ url_for('track_donation') }}" style="color:var(--accent);font-weight:600;">Track your donation →</a>
+    </div>
+</div>
+
+<!-- Payment Processing Modal -->
+<div id="paymentModal" class="modal-overlay" style="display:none;">
+    <div class="modal-box" id="modalBox">
+        <div id="step-processing">
+            <div class="spinner"></div>
+            <h3 style="font-size:1.2rem;font-weight:700;">Processing Payment...</h3>
+            <p class="text-muted" style="margin-top:0.5rem;font-size:0.875rem;">Connecting to payment gateway</p>
+        </div>
+        <div id="step-blockchain" style="display:none;">
+            <div class="spinner" style="border-top-color:var(--success);"></div>
+            <h3 style="font-size:1.2rem;font-weight:700;">Recording on Blockchain...</h3>
+            <p class="text-muted" style="margin-top:0.5rem;font-size:0.875rem;">Generating SHA-256 hash</p>
+        </div>
+        <div id="step-success" style="display:none;">
+            <div class="success-checkmark">✅</div>
+            <h3 style="font-size:1.3rem;font-weight:800;color:var(--success);margin-top:0.5rem;">Donation Successful!</h3>
+            <p class="text-muted" style="margin-top:0.5rem;font-size:0.875rem;">Transaction recorded on blockchain</p>
+        </div>
+    </div>
+</div>
+{% endblock %}
+{% block scripts %}
+<script>
+function setAmount(val) {
+    document.getElementById('amountInput').value = val;
+    document.querySelectorAll('.amount-btn').forEach(b => b.classList.remove('active'));
+    event.target.classList.add('active');
+}
+// Payment method highlight
+document.querySelectorAll('.pm-radio').forEach(r => {
+    r.addEventListener('change', () => {
+        document.querySelectorAll('.pm-btn').forEach(b => { b.style.borderColor = 'var(--border)'; b.style.background = '#fff'; });
+        r.parentElement.querySelector('.pm-btn').style.borderColor = 'var(--accent)';
+        r.parentElement.querySelector('.pm-btn').style.background = 'var(--accent-light)';
+    });
+});
+// Default highlight UPI
+document.querySelector('.pm-radio:checked')?.dispatchEvent(new Event('change'));
+// Form submit → show modal
+document.getElementById('donateForm').addEventListener('submit', function(e) {
+    const amt = document.getElementById('amountInput').value;
+    if (!amt || parseInt(amt) <= 0) return;
+    document.getElementById('paymentModal').style.display = 'flex';
+    setTimeout(() => {
+        document.getElementById('step-processing').style.display = 'none';
+        document.getElementById('step-blockchain').style.display = 'block';
+    }, 1500);
+    setTimeout(() => {
+        document.getElementById('step-blockchain').style.display = 'none';
+        document.getElementById('step-success').style.display = 'block';
+    }, 3000);
+    // Let the form submit naturally after delay
+});
+</script>
+{% endblock %}

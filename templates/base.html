@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}ReliefChain — Transparent Disaster Relief{% endblock %}</title>
+    <meta name="description" content="ReliefChain: Real-time, blockchain-verified disaster relief donation platform powered by AI fraud detection.">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+    <!-- GSAP & Lenis -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
+    <script src="https://unpkg.com/@studio-freight/lenis@1.0.33/dist/lenis.min.js"></script>
+    {% block head %}{% endblock %}
+</head>
+<body>
+
+{% if request.endpoint == 'home' %}
+<!-- Apple-style Breathing Background Blobs -->
+<div class="global-blobs">
+    <div class="blob b1"></div>
+    <div class="blob b2"></div>
+    <div class="blob b3"></div>
+</div>
+
+
+{% endif %}
+
+<!-- Disaster Alert Banner -->
+<div class="alert-banner" id="alertBanner">
+    <span class="blink">⚠️</span>
+    <div class="marquee">
+        <span class="marquee-inner">
+            🌊 Heavy Flooding Alert — Kerala &nbsp;&nbsp;|&nbsp;&nbsp; 🌀 Cyclone Warning — Odisha Coast &nbsp;&nbsp;|&nbsp;&nbsp; 🏔️ Earthquake M6.2 — Nepal &nbsp;&nbsp;|&nbsp;&nbsp; 🌾 Drought Emergency — Vidarbha &nbsp;&nbsp;|&nbsp;&nbsp; ⛰️ Landslide Alert — Chamoli, Uttarakhand &nbsp;&nbsp;|&nbsp;&nbsp; 🌡️ Extreme Heat — Rajasthan Districts &nbsp;&nbsp;&nbsp;&nbsp;
+        </span>
+    </div>
+    <button onclick="document.getElementById('alertBanner').style.display='none'" style="background:none;border:none;color:#fff;cursor:pointer;font-size:1rem;flex-shrink:0;">✕</button>
+</div>
+
+<!-- Navbar -->
+<nav class="navbar">
+    <div class="logo">
+        <a href="{{ url_for('index') }}">Relief<span>Chain</span></a>
+    </div>
+    <ul class="nav-links">
+        <li><a href="{{ url_for('home') }}" {% if request.endpoint=='home' %}class="active"{% endif %}>Home</a></li>
+        <li><a href="{{ url_for('campaigns') }}" {% if request.endpoint in ['campaigns','campaign_detail'] %}class="active"{% endif %}>Campaigns</a></li>
+        <li><a href="{{ url_for('public_dashboard') }}" {% if request.endpoint=='public_dashboard' %}class="active"{% endif %}>Live Dashboard</a></li>
+        <li><a href="{{ url_for('ledger') }}" {% if request.endpoint=='ledger' %}class="active"{% endif %}>Ledger</a></li>
+        <li><a href="{{ url_for('disasters') }}" {% if request.endpoint=='disasters' %}class="active"{% endif %}>Disasters</a></li>
+        <li><a href="{{ url_for('ngos') }}" {% if request.endpoint=='ngos' %}class="active"{% endif %}>NGOs</a></li>
+        {% if session.get('role') == 'admin' %}
+        <li><a href="{{ url_for('admin_dashboard') }}" class="btn-nav">⚙️ Admin</a></li>
+        {% elif session.get('user_id') %}
+        <li><a href="{{ url_for('donate') }}" class="btn-nav">❤️ Donate</a></li>
+        <li><a href="{{ url_for('donor_profile') }}">👤 {{ session.get('user_name','').split()[0] }}</a></li>
+        <li><a href="{{ url_for('logout') }}">Logout</a></li>
+        {% else %}
+        <li><a href="{{ url_for('donate') }}" class="btn-nav">❤️ Donate Now</a></li>
+        <li><a href="{{ url_for('login') }}">Login</a></li>
+        {% endif %}
+    </ul>
+    <div class="live-badge">
+        <span class="live-dot"></span> LIVE
+    </div>
+</nav>
+
+<!-- Flash Messages -->
+{% with messages = get_flashed_messages(with_categories=true) %}
+{% if messages %}
+<div class="flash-messages">
+    {% for category, message in messages %}
+    <div class="flash {{ category }}">
+        {% if category == 'success' %}✅{% elif category == 'error' %}⚠️{% else %}ℹ️{% endif %}
+        {{ message }}
+    </div>
+    {% endfor %}
+</div>
+<script>setTimeout(() => { document.querySelectorAll('.flash').forEach(f => f.style.display='none'); }, 6000);</script>
+{% endif %}
+{% endwith %}
+
+<!-- Main -->
+{% block content %}{% endblock %}
+
+<footer class="footer" style="padding: 2.5rem 0; text-align: center; border-top: 1px solid var(--border); margin-top: 4rem; color: var(--text-muted); font-size: 0.9rem; background: #fff;">
+    <div class="container">
+        <p>&copy; {{ now().year }} ReliefChain. All rights reserved.</p>
+        <p style="margin-top: 0.5rem; font-weight: 600;">Created by <span style="color: var(--primary);">Tech Titans</span></p>
+    </div>
+</footer>
+
+<!-- SocketIO Live Feed -->
+<script>
+const socket = io();
+socket.on('connect', () => { console.log('[ReliefChain] Connected to live feed'); });
+socket.on('new_donation', (data) => {
+    // Update counters
+    const totalEl = document.getElementById('live-total');
+    const txCountEl = document.getElementById('live-txcount');
+    if (totalEl) {
+        const cur = parseInt(totalEl.dataset.val || 0);
+        animateCounter(totalEl, cur, cur + data.amount, 800);
+        totalEl.dataset.val = cur + data.amount;
+    }
+    if (txCountEl) {
+        const cur2 = parseInt(txCountEl.dataset.val || 0);
+        txCountEl.dataset.val = cur2 + 1;
+        animateCounter(txCountEl, cur2, cur2 + 1, 400);
+    }
+    // Inject into live feed table
+    const liveTable = document.getElementById('live-feed-tbody');
+    if (liveTable) {
+        const row = document.createElement('tr');
+        row.className = 'row-new';
+        row.innerHTML = `
+            <td class="td-mono">${data.tx_id}</td>
+            <td><strong>${data.donor}</strong></td>
+            <td style="color:var(--success);font-weight:700;">₹${data.amount.toLocaleString('en-IN')}</td>
+            <td>${data.campaign}</td>
+            <td>${data.beneficiary}</td>
+            <td class="td-mono text-muted" style="font-size:0.72rem;">${data.hash}</td>
+            <td>${data.timestamp}</td>
+        `;
+        liveTable.prepend(row);
+        if (liveTable.rows.length > 20) liveTable.deleteRow(liveTable.rows.length - 1);
+    }
+    // Inject into simple feed
+    const simpleFeed = document.getElementById('simple-feed');
+    if (simpleFeed) {
+        const item = document.createElement('div');
+        item.className = 'row-new';
+        item.style.cssText = 'padding:0.75rem 1rem;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;';
+        item.innerHTML = `<span><strong>${data.donor}</strong> → ${data.campaign}</span><span style="color:var(--success);font-weight:700;">₹${data.amount.toLocaleString('en-IN')}</span>`;
+        simpleFeed.prepend(item);
+        if (simpleFeed.children.length > 8) simpleFeed.removeChild(simpleFeed.lastChild);
+    }
+    showLiveToast(data.donor, data.amount, data.campaign);
+});
+
+function animateCounter(el, from, to, duration) {
+    const start = performance.now();
+    const update = (ts) => {
+        const prog = Math.min((ts - start) / duration, 1);
+        const val = Math.floor(from + (to - from) * prog);
+        el.textContent = '₹' + val.toLocaleString('en-IN');
+        if (prog < 1) requestAnimationFrame(update);
+    };
+    requestAnimationFrame(update);
+}
+
+function showLiveToast(donor, amount, campaign) {
+    const toast = document.createElement('div');
+    toast.style.cssText = 'position:fixed;bottom:1.5rem;left:50%;transform:translateX(-50%);background:var(--primary);color:#fff;padding:0.75rem 1.5rem;border-radius:999px;font-size:0.875rem;font-weight:600;box-shadow:0 8px 32px rgba(0,0,0,0.3);z-index:1000;animation:toast-in 0.4s ease;white-space:nowrap;';
+    toast.innerHTML = `💚 New: <strong>${donor}</strong> donated ₹${amount.toLocaleString('en-IN')} to ${campaign}`;
+    document.body.appendChild(toast);
+    setTimeout(() => toast.remove(), 4000);
+}
+
+{% if request.endpoint == 'index' %}
+// --- Cinematic Interactive Effects (Hope Foundation Style) ---
+// Smooth Scrolling
+const lenis = new Lenis({
+    duration: 1.5,
+    easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
+    smooth: true,
+});
+function raf(time) { lenis.raf(time); requestAnimationFrame(raf); }
+requestAnimationFrame(raf);
+
+gsap.registerPlugin(ScrollTrigger);
+lenis.on('scroll', ScrollTrigger.update);
+gsap.ticker.add((time) => { lenis.raf(time * 1000); });
+gsap.ticker.lagSmoothing(0, 0);
+
+// Global Auto-Reveals (Fade & Slide up automatically as you scroll)
+document.addEventListener("DOMContentLoaded", () => {
+    const revealElements = document.querySelectorAll('.card, .stat-strip-item, .section-title, .hero h1, .hero p, .timeline-item');
+    revealElements.forEach(el => {
+        gsap.fromTo(el, 
+            { opacity: 0, y: 30 },
+            { 
+                scrollTrigger: { trigger: el, start: "top 90%" },
+                opacity: 1, y: 0, 
+                duration: 1.2, 
+                ease: "power2.out"
+            }
+        );
+    });
+
+    // Cursor Parallax / Spotlight effect on cards
+    const cards = document.querySelectorAll('.card');
+    document.addEventListener('mousemove', (e) => {
+        cards.forEach(card => {
+            const rect = card.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+            card.style.setProperty('--mouse-x', `${x}px`);
+            card.style.setProperty('--mouse-y', `${y}px`);
+        });
+    });
+
+
+});
+{% endif %}
+
+</script>
+
+{% block scripts %}{% endblock %}
+</body>
+</html>

@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ReliefChain — Every Contribution Creates Impact</title>
+    <meta name="description" content="ReliefChain: Experience the journey of transparent disaster relief powered by blockchain.">
+    <link rel="stylesheet" href="{{ url_for('static', filename='cinematic.css') }}">
+</head>
+<body>
+
+<!-- Progress Bar -->
+<div class="cin-progress" id="cinProgress"></div>
+
+<!-- Logo -->
+<a href="/" class="cin-logo">Relief<span>Chain</span></a>
+
+<!-- Skip Link -->
+<a href="{{ url_for('home') }}" class="cin-skip">Skip to Platform →</a>
+
+<!-- Scroll Hint -->
+<div class="cin-scroll-hint" id="scrollHint">
+    <div class="cin-scroll-mouse"></div>
+    <span>Scroll to explore</span>
+</div>
+
+<!-- ═══ THREE.JS CANVAS ═══ -->
+<canvas id="cinematic-canvas"></canvas>
+
+<!-- ═══ SCROLL CONTAINER (500vh drives the timeline) ═══ -->
+<div class="scroll-container" id="scrollContainer"></div>
+
+<!-- ═══ SCENE 1: DISASTER ═══ -->
+<div class="cin-overlay scene-disaster" id="sceneDisaster">
+    <h1>Millions need help.</h1>
+    <p>Every year, disasters leave communities shattered. Homes destroyed. Lives disrupted. But hope remains.</p>
+</div>
+
+<!-- ═══ SCENE 2: ACTION ═══ -->
+<div class="cin-overlay scene-action" id="sceneAction">
+    <h2>One tap changes everything.</h2>
+    <p>Your donation, verified and tracked in real-time.</p>
+    <div class="phone-ui" id="phoneUI">
+        <div class="phone-header">
+            <h4>⛓️ ReliefChain</h4>
+        </div>
+        <div class="phone-amount">₹5,000</div>
+        <button class="phone-btn" id="phoneBtn">Donate Securely →</button>
+    </div>
+</div>
+
+<!-- ═══ SCENE 3: BLOCKCHAIN ═══ -->
+<div class="cin-overlay scene-blockchain" id="sceneBlockchain">
+    <h2>Transparent. Immutable. Trusted.</h2>
+    <p>Every rupee is cryptographically sealed on our blockchain ledger. No middlemen. No leaks. Full accountability.</p>
+    <div class="node-labels">
+        <div class="node-label">🏛️ NGO</div>
+        <div class="node-label">🚚 Supplier</div>
+        <div class="node-label">🙋 Volunteer</div>
+        <div class="node-label">🏥 Hospital</div>
+        <div class="node-label">✅ Verified</div>
+    </div>
+</div>
+
+<!-- ═══ SCENE 4: IMPACT ═══ -->
+<div class="cin-overlay scene-impact" id="sceneImpact">
+    <h2>Real lives. Real impact.</h2>
+    <p>Your generosity translates directly into food, shelter, and medical aid for verified beneficiaries.</p>
+    <div class="impact-stats">
+        <div class="impact-stat">
+            <div class="num">{{ total_txns }}</div>
+            <div class="lbl">Donations Tracked</div>
+        </div>
+        <div class="impact-stat">
+            <div class="num">{{ ben_verified }}</div>
+            <div class="lbl">Beneficiaries Verified</div>
+        </div>
+        <div class="impact-stat">
+            <div class="num">100%</div>
+            <div class="lbl">Transparent</div>
+        </div>
+    </div>
+</div>
+
+<!-- ═══ SCENE 5: CTA ═══ -->
+<div class="cin-overlay scene-cta" id="sceneCta">
+    <h2>Be the reason<br>someone survives.</h2>
+    <p>Join thousands of verified donors making a real, traceable difference.</p>
+    <a href="{{ url_for('donate') }}" class="cta-btn">❤️ Donate Now</a>
+    <a href="{{ url_for('home') }}" class="cta-secondary">Explore the Platform →</a>
+</div>
+
+<!-- ═══ SCRIPTS ═══ -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
+<script src="{{ url_for('static', filename='cinematic.js') }}"></script>
+</body>
+</html>

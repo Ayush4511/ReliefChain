@@ -1,0 +1,53 @@
+{% extends 'base.html' %}
+{% block title %}Active Campaigns — ReliefChain{% endblock %}
+{% block content %}
+<div class="container" style="padding-top:2.5rem;">
+    <div class="page-header">
+        <div>
+            <h1 class="page-title">Active Campaigns</h1>
+            <p class="text-muted text-sm">All verified disaster relief campaigns — donate directly</p>
+        </div>
+        <div class="live-badge"><span class="live-dot"></span> LIVE</div>
+    </div>
+    <div class="campaign-grid">
+        {% for c in campaigns %}
+        {% set pct = [(c.raised_amount / c.target_amount * 100)|int, 100]|min %}
+        <div class="campaign-card">
+            <div class="campaign-card-header">
+                <div class="campaign-icon">{{ c.image_icon }}</div>
+                <div>
+                    <h3>{{ c.name }}</h3>
+                    <div style="display:flex;gap:0.5rem;align-items:center;margin-top:0.25rem;">
+                        <span class="badge badge-{% if c.status=='active' %}success{% elif c.status=='completed' %}primary{% else %}warning{% endif %}">{{ c.status|capitalize }}</span>
+                        <span class="badge badge-muted">{{ c.category }}</span>
+                        <span class="badge badge-muted">{{ c.region }}</span>
+                    </div>
+                </div>
+            </div>
+            <div class="campaign-card-body">
+                <p>{{ c.description }}</p>
+                <div class="progress-bar-wrap">
+                    <div class="progress-bar" style="width:{{ pct }}%"></div>
+                </div>
+                <div class="campaign-meta">
+                    <span>Raised: <strong style="color:var(--success);">₹{{ '{:,.0f}'.format(c.raised_amount) }}</strong></span>
+                    <span>Goal: <strong>₹{{ '{:,.0f}'.format(c.target_amount) }}</strong></span>
+                </div>
+                <div style="margin-top:0.75rem;display:flex;gap:1rem;font-size:0.8rem;color:var(--text-muted);">
+                    <span>👥 {{ c.beneficiary_count }} beneficiaries</span>
+                    <span>📊 {{ pct }}% funded</span>
+                </div>
+            </div>
+            <div class="campaign-footer">
+                <a href="{{ url_for('campaign_detail', cid=c.id) }}" class="btn btn-outline btn-sm">View Details</a>
+                {% if c.status == 'active' %}
+                <a href="{{ url_for('donate') }}?campaign={{ c.id }}" class="btn btn-primary btn-sm">❤️ Donate</a>
+                {% else %}
+                <span class="badge badge-muted" style="align-self:center;">{{ c.status|capitalize }}</span>
+                {% endif %}
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

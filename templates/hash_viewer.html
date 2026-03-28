@@ -1,0 +1,52 @@
+{% extends 'base.html' %}
+{% block title %}Hash Viewer — ReliefChain{% endblock %}
+{% block content %}
+<div class="container" style="max-width:760px;padding-top:3rem;">
+    <h1 class="page-title">🔐 Blockchain Hash Viewer</h1>
+    <p class="text-muted" style="margin-top:0.5rem;margin-bottom:2rem;">Enter a Transaction ID or hash prefix to verify authenticity</p>
+    <div class="card" style="margin-bottom:2rem;">
+        <form method="POST" action="{{ url_for('hash_viewer') }}">
+            <div class="form-group">
+                <label class="form-label">Transaction ID or Hash</label>
+                <input type="text" name="query" class="form-control" placeholder="RC-XXXXXXXXXX or hash prefix">
+            </div>
+            <button type="submit" class="btn btn-primary btn-block">🔍 Verify Hash</button>
+        </form>
+    </div>
+    {% if result %}
+    <div class="card" style="border-color:var(--success);">
+        <div style="display:flex;align-items:center;gap:0.75rem;margin-bottom:1.5rem;">
+            <div style="font-size:2rem;">✅</div>
+            <div>
+                <h3 style="font-weight:800;color:var(--success);">Transaction Verified</h3>
+                <p class="text-sm text-muted">Block #{{ result.block_number }} — Authentic &amp; Immutable</p>
+            </div>
+        </div>
+        <div class="form-group">
+            <label class="form-label">Transaction ID</label>
+            <div class="block-hash" style="padding:0.75rem;">{{ result.tx_id }}</div>
+        </div>
+        <div class="form-group">
+            <label class="form-label">SHA-256 Hash</label>
+            <div class="block-hash" style="word-break:break-all;padding:0.75rem;">{{ result.hash }}</div>
+        </div>
+        <div class="form-group">
+            <label class="form-label">Previous Block Hash</label>
+            <div class="block-hash" style="word-break:break-all;padding:0.75rem;opacity:0.7;">{{ result.prev_hash }}</div>
+        </div>
+        <div class="grid-2">
+            <div><span class="text-sm text-muted">Amount: </span><strong style="color:var(--success);">₹{{ '{:,.0f}'.format(result.amount) }}</strong></div>
+            <div><span class="text-sm text-muted">From: </span><strong>{{ result.from_entity }}</strong></div>
+            <div><span class="text-sm text-muted">To: </span><strong>{{ result.to_entity }}</strong></div>
+            <div><span class="text-sm text-muted">Time: </span><strong>{{ result.timestamp[:16] }}</strong></div>
+        </div>
+    </div>
+    {% elif request.method == 'POST' %}
+    <div class="card" style="text-align:center;padding:3rem;border-color:var(--danger);">
+        <div style="font-size:3rem;margin-bottom:1rem;">❌</div>
+        <h3>Not Found</h3>
+        <p class="text-muted">No matching block in the ledger.</p>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

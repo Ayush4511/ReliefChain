@@ -1,0 +1,51 @@
+{% extends 'base.html' %}
+{% block title %}Beneficiary Profile — ReliefChain{% endblock %}
+{% block content %}
+<div class="container" style="max-width:680px;padding-top:3rem;">
+    <h1 class="page-title">Beneficiary Profile</h1>
+    <div class="card" style="margin-top:1.5rem;margin-bottom:2rem;">
+        <form method="GET" action="{{ url_for('beneficiary_profile') }}">
+            <div class="form-group">
+                <label class="form-label">Search by Aadhaar Number</label>
+                <input type="text" name="aadhaar" class="form-control" placeholder="12-digit Aadhaar" value="{{ request.args.get('aadhaar','') }}" maxlength="12">
+            </div>
+            <button type="submit" class="btn btn-primary btn-block">🔍 Lookup</button>
+        </form>
+    </div>
+    {% if ben %}
+    <div class="card">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:1.5rem;">
+            <div>
+                <h2 style="font-size:1.25rem;font-weight:800;">{{ ben.name }}</h2>
+                <p class="text-muted text-sm">{{ ben.address or ben.state }}</p>
+            </div>
+            <span class="badge badge-{% if ben.status=='verified' %}success{% elif ben.status=='rejected' %}danger{% elif ben.flagged %}warning{% else %}muted{% endif %}">
+                {{ ben.status|capitalize }}
+            </span>
+        </div>
+        <div class="grid-2">
+            <div><span class="text-sm text-muted">Phone</span><div style="font-weight:600;">{{ ben.phone[:3] }}XXXXXXX</div></div>
+            <div><span class="text-sm text-muted">State</span><div style="font-weight:600;">{{ ben.state }}</div></div>
+            <div><span class="text-sm text-muted">Campaign</span><div style="font-weight:600;">{{ ben.campaign_name or '—' }}</div></div>
+            <div><span class="text-sm text-muted">Aid Amount</span><div style="font-weight:600;color:var(--success);">₹{{ '{:,.0f}'.format(ben.aid_amount) }}</div></div>
+            <div><span class="text-sm text-muted">Trust Score</span>
+                <div>{% if ben.trust_score >=70 %}<span class="trust-badge high">{{ ben.trust_score }}/100</span>
+                {% elif ben.trust_score >=40 %}<span class="trust-badge medium">{{ ben.trust_score }}/100</span>
+                {% else %}<span class="trust-badge low">{{ ben.trust_score }}/100</span>{% endif %}</div>
+            </div>
+            <div><span class="text-sm text-muted">Registered</span><div style="font-weight:600;">{{ ben.created_at[:10] }}</div></div>
+        </div>
+        {% if ben.flag_reason %}
+        <div style="background:var(--danger-light);border-radius:8px;padding:0.875rem;margin-top:1rem;color:var(--danger);font-size:0.875rem;">
+            ⚠️ Flagged: {{ ben.flag_reason }}
+        </div>
+        {% endif %}
+    </div>
+    {% elif request.args.get('aadhaar') %}
+    <div class="card" style="text-align:center;padding:3rem;">
+        <div style="font-size:3rem;">❌</div>
+        <h3>Beneficiary not found</h3>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

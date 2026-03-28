@@ -1,0 +1,130 @@
+{% extends 'admin_base.html' %}
+{% block title %}Admin Dashboard — ReliefChain{% endblock %}
+{% block content %}
+<div class="page-header">
+    <div>
+        <h1 class="page-title">Admin Dashboard</h1>
+        <p class="text-muted text-sm">Real-time platform overview</p>
+    </div>
+    <div class="live-badge"><span class="live-dot"></span> ALL SYSTEMS LIVE</div>
+</div>
+
+<!-- Stats -->
+<div class="stats-grid">
+    <div class="stat-card">
+        <div class="icon indigo">💰</div>
+        <div class="title">Total Raised</div>
+        <div class="value" id="live-total" data-val="{{ total_donations }}">₹{{ '{:,.0f}'.format(total_donations) }}</div>
+        <div class="trend">↑ Live updating</div>
+    </div>
+    <div class="stat-card">
+        <div class="icon green">🔁</div>
+        <div class="title">Transactions</div>
+        <div class="value" id="live-txcount" data-val="{{ total_txns }}">{{ total_txns }}</div>
+        <div class="trend">↑ Auto-generating</div>
+    </div>
+    <div class="stat-card">
+        <div class="icon green">✅</div>
+        <div class="title">Verified Beneficiaries</div>
+        <div class="value" style="color:var(--success);">{{ ben_verified }}</div>
+    </div>
+    <div class="stat-card">
+        <div class="icon red">⚠️</div>
+        <div class="title">Pending Verification</div>
+        <div class="value" style="color:var(--warning);">{{ pending_count }}</div>
+        <div style="margin-top:0.5rem;"><a href="{{ url_for('verify_beneficiaries') }}" class="btn btn-warning btn-sm">Review →</a></div>
+    </div>
+    <div class="stat-card">
+        <div class="icon red">🤖</div>
+        <div class="title">Fraud Flagged</div>
+        <div class="value" style="color:var(--danger);">{{ fraud_count }}</div>
+        <div style="margin-top:0.5rem;"><a href="{{ url_for('fraud_detection') }}" class="btn btn-danger btn-sm">View →</a></div>
+    </div>
+</div>
+
+<!-- Fraud Alerts + Chart Row -->
+<div class="grid-2" style="margin-bottom:2rem;">
+    <div class="card">
+        <div class="card-header"><span class="card-title">📈 Donation Trend (14 days)</span></div>
+        <div class="chart-container"><canvas id="trendChart"></canvas></div>
+    </div>
+    <div class="card">
+        <div class="card-header">
+            <span class="card-title">⚠️ Recent Fraud Alerts</span>
+            <a href="{{ url_for('fraud_detection') }}" class="btn btn-outline btn-sm">View All</a>
+        </div>
+        {% for b in flagged_beneficiaries %}
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:0.75rem 0;border-bottom:1px solid var(--border);">
+            <div>
+                <div style="font-weight:600;font-size:0.875rem;">{{ b.name }}</div>
+                <div style="font-size:0.78rem;color:var(--danger);">{{ b.flag_reason or 'Flagged by AI' }}</div>
+            </div>
+            <div>
+                {% if b.trust_score < 40 %}<span class="trust-badge low">Score: {{ b.trust_score }}</span>
+                {% else %}<span class="trust-badge medium">Score: {{ b.trust_score }}</span>{% endif %}
+            </div>
+        </div>
+        {% else %}
+        <div class="text-center text-muted" style="padding:2rem;">✅ No fraud alerts</div>
+        {% endfor %}
+    </div>
+</div>
+
+<!-- Campaign Progress -->
+<div class="card" style="margin-bottom:2rem;">
+    <div class="card-header"><span class="card-title">🎯 Campaign Progress</span><a href="{{ url_for('campaign_management') }}" class="btn btn-outline btn-sm">Manage</a></div>
+    {% for c in campaigns %}
+    {% set pct = [(c.raised_amount / c.target_amount * 100)|int, 100]|min %}
+    <div style="margin-bottom:1.25rem;">
+        <div style="display:flex;justify-content:space-between;margin-bottom:0.3rem;">
+            <span style="font-weight:600;font-size:0.875rem;">{{ c.image_icon }} {{ c.name }}</span>
+            <div style="display:flex;gap:0.5rem;align-items:center;">
+                <span class="badge badge-{% if c.status=='active' %}success{% elif c.status=='completed' %}primary{% else %}warning{% endif %}">{{ c.status }}</span>
+                <span style="font-size:0.8rem;color:var(--text-muted);">₹{{ '{:,.0f}'.format(c.raised_amount) }} / ₹{{ '{:,.0f}'.format(c.target_amount) }}</span>
+            </div>
+        </div>
+        <div class="progress-bar-wrap"><div class="progress-bar" style="width:{{ pct }}%"></div></div>
+    </div>
+    {% endfor %}
+</div>
+
+<!-- Live Transactions -->
+<div class="card">
+    <div class="card-header">
+        <span class="card-title">⚡ Live Transactions</span>
+        <div class="live-badge"><span class="live-dot"></span> LIVE</div>
+    </div>
+    <div class="table-wrap" style="border:none;border-radius:0;">
+        <table>
+            <thead><tr><th>TX ID</th><th>Donor</th><th>Amount</th><th>Campaign</th><th>Beneficiary</th><th>Status</th><th>Time</th></tr></thead>
+            <tbody id="live-feed-tbody">
+                {% for d in recent_donations %}
+                <tr>
+                    <td class="td-mono" style="font-size:0.78rem;">{{ d.tx_id }}</td>
+                    <td><strong>{{ d.donor_name }}</strong></td>
+                    <td style="color:var(--success);font-weight:700;">₹{{ '{:,.0f}'.format(d.amount) }}</td>
+                    <td class="text-sm">{{ d.beneficiary or '—' }}</td>
+                    <td class="text-sm">{{ d.beneficiary }}</td>
+                    <td><span class="badge badge-success">Completed</span></td>
+                    <td class="text-sm text-muted">{{ d.timestamp[11:16] }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
+{% block scripts %}
+<script>
+const labels = {{ chart_labels|tojson|safe }};
+const data = {{ chart_data|tojson|safe }};
+new Chart(document.getElementById('trendChart'), {
+    type: 'bar',
+    data: { labels: labels, datasets: [{ label: '₹ Donations', data: data,
+        backgroundColor: 'rgba(99,102,241,0.7)', borderRadius: 6, borderSkipped: false }] },
+    options: { responsive:true, maintainAspectRatio:false,
+        plugins:{legend:{display:false}},
+        scales:{y:{beginAtZero:true,grid:{color:'#F1F5F9'}},x:{grid:{display:false}}} }
+});
+</script>
+{% endblock %}

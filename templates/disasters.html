@@ -1,0 +1,41 @@
+{% extends 'base.html' %}
+{% block title %}Active Disaster Alerts — ReliefChain{% endblock %}
+{% block content %}
+<div class="container" style="padding-top:2.5rem;">
+    <div class="page-header">
+        <div>
+            <h1 class="page-title">⚠️ Active Disaster Alerts</h1>
+            <p class="text-muted text-sm">Live disaster data — updated automatically</p>
+        </div>
+        <div class="live-badge"><span class="live-dot"></span> LIVE</div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(360px,1fr));gap:1.25rem;margin-bottom:2rem;">
+        {% for a in alerts %}
+        <div class="disaster-card {{ a.severity|lower }}">
+            <div class="disaster-icon">{{ a.icon }}</div>
+            <div style="flex:1;">
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.25rem;">
+                    <h3 style="font-size:1.05rem;font-weight:700;">{{ a.type }}</h3>
+                    <span class="severity-badge sev-{{ a.severity|lower }}">{{ a.severity }}</span>
+                </div>
+                <div style="font-weight:600;color:var(--text-muted);font-size:0.875rem;margin-bottom:0.5rem;">📍 {{ a.location }}</div>
+                <div style="display:flex;gap:1rem;font-size:0.8rem;color:var(--text-muted);">
+                    <span>⏱ Active for {{ a.since }}</span>
+                    <span>👥 ~{{ '{:,.0f}'.format(a.affected) }} affected</span>
+                </div>
+                <div style="margin-top:0.75rem;">
+                    <a href="{{ url_for('fund_by_name', name=a.type) }}" class="btn btn-primary btn-sm">❤️ Donate Now</a>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <div class="card" style="background:linear-gradient(135deg,var(--primary),#1E1B4B);color:#fff;text-align:center;padding:3rem;">
+        <h2 style="font-size:1.5rem;font-weight:800;margin-bottom:0.75rem;">Are you affected by a disaster?</h2>
+        <p style="color:#94A3B8;margin-bottom:2rem;">Register as a beneficiary to receive relief aid from our verified campaigns.</p>
+        <a href="{{ url_for('beneficiary_register') }}" class="btn btn-outline-white btn-lg">🆘 Register for Aid</a>
+    </div>
+</div>
+{% endblock %}

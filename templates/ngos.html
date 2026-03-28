@@ -1,0 +1,32 @@
+{% extends 'base.html' %}
+{% block title %}NGO Partners — ReliefChain{% endblock %}
+{% block content %}
+<div class="container" style="padding-top:2.5rem;">
+    <div class="page-header">
+        <div>
+            <h1 class="page-title">NGO & Partner Network</h1>
+            <p class="text-muted text-sm">Verified organizations implementing relief on the ground</p>
+        </div>
+        <span class="badge badge-success" style="font-size:0.85rem;padding:0.5rem 1rem;">{{ partners|length }} Verified Partners</span>
+    </div>
+    <div class="campaign-grid">
+        {% for p in partners %}
+        <div class="campaign-card" style="flex-direction:row;display:flex;">
+            <div style="padding:1.5rem;flex:1;">
+                <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:0.75rem;">
+                    <h3 style="font-size:1rem;font-weight:700;">{{ p.name }}</h3>
+                    {% if p.certified %}<span class="badge badge-success">✅ Certified</span>{% endif %}
+                </div>
+                <p class="text-sm text-muted" style="margin-bottom:0.75rem;">{{ p.focus }}</p>
+                <div style="display:flex;gap:0.5rem;">
+                    <span class="badge badge-{% if p.type=='Government' %}danger{% elif 'International' in p.type %}primary{% else %}muted{% endif %}">{{ p.type }}</span>
+                </div>
+                <div style="margin-top:1rem;">
+                    <a href="{{ url_for('fund_by_name', name=p.name) }}" class="btn btn-primary btn-sm">Donate / View Fund</a>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

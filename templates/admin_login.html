@@ -1,0 +1,30 @@
+{% extends 'base.html' %}
+{% block title %}Admin Login — ReliefChain{% endblock %}
+{% block content %}
+<div class="auth-wrapper" style="background:linear-gradient(135deg,#0F172A 0%,#1E1B4B 100%);">
+    <div class="auth-card" style="max-width:420px;">
+        <div class="auth-logo">
+            <div style="font-size:2.5rem;margin-bottom:0.75rem;">⚙️</div>
+            <h2>Admin Portal</h2>
+            <p>Restricted access — authorized personnel only</p>
+        </div>
+        <div style="background:#FEF3C7;border:1px solid #F59E0B;border-radius:8px;padding:0.75rem 1rem;font-size:0.825rem;margin-bottom:1.25rem;color:#92400E;">
+            🔐 Demo: <code>admin@reliefchain.in</code> / <code>admin123</code>
+        </div>
+        <form method="POST" action="{{ url_for('admin_login') }}">
+            <div class="form-group">
+                <label class="form-label">Admin Email</label>
+                <input type="email" name="email" class="form-control" placeholder="admin@reliefchain.in" required>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Password</label>
+                <input type="password" name="password" class="form-control" placeholder="Enter admin password" required>
+            </div>
+            <button type="submit" class="btn btn-primary btn-block">⚙️ Access Admin Panel</button>
+        </form>
+        <div style="text-align:center;margin-top:1.25rem;font-size:0.85rem;">
+            <a href="{{ url_for('login') }}" style="color:var(--text-muted);">← Back to regular login</a>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,425 @@
+/* ═══════════════════════════════════════════════
+   RELIEFCHAIN — CINEMATIC 3D EXPERIENCE
+   Scroll-controlled storytelling CSS
+   ═══════════════════════════════════════════════ */
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+:root {
+    --cin-font: 'Inter', -apple-system, sans-serif;
+    --cin-dark: #0a0a0f;
+    --cin-cold: #1a2a3a;
+    --cin-neon-cyan: #00f0ff;
+    --cin-neon-purple: #a855f7;
+    --cin-warm-gold: #f0c040;
+    --cin-warm-orange: #ff8c42;
+    --cin-green: #2d6a4f;
+    --cin-cream: #f8f6f0;
+    --cin-text: #e8e8e8;
+    --cin-muted: #6b7280;
+}
+
+html {
+    scroll-behavior: auto; /* GSAP handles scrolling */
+}
+
+body {
+    font-family: var(--cin-font);
+    background: var(--cin-dark);
+    color: var(--cin-text);
+    overflow-x: hidden;
+    -webkit-font-smoothing: antialiased;
+}
+
+/* ─── CANVAS (Fixed full-screen) ─── */
+#cinematic-canvas {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100vw; height: 100vh;
+    z-index: 1;
+    display: block;
+}
+
+/* ─── SCROLL CONTAINER (Drives timeline) ─── */
+.scroll-container {
+    position: relative;
+    z-index: 2;
+    height: 500vh;
+    pointer-events: none;
+}
+
+/* ─── OVERLAY SECTIONS ─── */
+.cin-overlay {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100vw; height: 100vh;
+    z-index: 10;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    pointer-events: none;
+    opacity: 0;
+    transition: none; /* GSAP controls */
+}
+
+.cin-overlay.active {
+    opacity: 1;
+}
+
+/* ─── PROGRESS BAR ─── */
+.cin-progress {
+    position: fixed;
+    top: 0; left: 0;
+    width: 0%;
+    height: 3px;
+    background: linear-gradient(90deg, var(--cin-neon-cyan), var(--cin-neon-purple), var(--cin-warm-gold));
+    z-index: 100;
+    transition: width 0.1s linear;
+}
+
+/* ─── SKIP LINK ─── */
+.cin-skip {
+    position: fixed;
+    top: 1.5rem; right: 2rem;
+    z-index: 100;
+    color: rgba(255,255,255,0.4);
+    font-size: 0.8rem;
+    font-weight: 500;
+    text-decoration: none;
+    pointer-events: all;
+    transition: color 0.3s, transform 0.3s;
+    letter-spacing: 0.5px;
+}
+.cin-skip:hover { color: #fff; transform: translateX(-4px); }
+
+/* ─── LOGO ─── */
+.cin-logo {
+    position: fixed;
+    top: 1.5rem; left: 2rem;
+    z-index: 100;
+    font-size: 1.2rem;
+    font-weight: 800;
+    color: rgba(255,255,255,0.7);
+    letter-spacing: -0.5px;
+    pointer-events: all;
+    text-decoration: none;
+}
+.cin-logo span { color: var(--cin-neon-cyan); }
+
+/* ─── SCROLL HINT ─── */
+.cin-scroll-hint {
+    position: fixed;
+    bottom: 2rem;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 100;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+    opacity: 0.6;
+    animation: cin-bounce 2s ease-in-out infinite;
+}
+.cin-scroll-hint span {
+    font-size: 0.75rem;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.5);
+}
+.cin-scroll-mouse {
+    width: 24px; height: 40px;
+    border: 2px solid rgba(255,255,255,0.3);
+    border-radius: 12px;
+    position: relative;
+}
+.cin-scroll-mouse::after {
+    content: '';
+    position: absolute;
+    top: 8px; left: 50%;
+    transform: translateX(-50%);
+    width: 4px; height: 8px;
+    background: rgba(255,255,255,0.6);
+    border-radius: 2px;
+    animation: cin-scroll-dot 1.5s ease-in-out infinite;
+}
+
+@keyframes cin-bounce {
+    0%, 100% { transform: translateX(-50%) translateY(0); }
+    50% { transform: translateX(-50%) translateY(8px); }
+}
+@keyframes cin-scroll-dot {
+    0% { opacity: 1; top: 8px; }
+    100% { opacity: 0; top: 24px; }
+}
+
+/* ═══════════════════════════════════════
+   HERO: LOGO + TAGLINE
+   ═══════════════════════════════════════ */
+.scene-hero {
+    flex-direction: column;
+    text-align: center;
+    padding: 2rem;
+    justify-content: flex-start;
+    padding-top: 15vh;
+}
+.scene-hero h1 {
+    font-size: clamp(3rem, 7vw, 6rem);
+    font-weight: 900;
+    line-height: 1.1;
+    letter-spacing: -3px;
+    color: #fff;
+}
+.scene-hero p {
+    font-size: clamp(0.9rem, 1.5vw, 1.2rem);
+    font-weight: 300;
+    color: rgba(180, 200, 240, 0.6);
+    max-width: 500px;
+    margin-top: 1.2rem;
+    letter-spacing: 1px;
+}
+
+/* ═══════════════════════════════════════
+   SCENE 1: DISASTER — Cold, Dark, Urgent
+   ═══════════════════════════════════════ */
+.scene-disaster {
+    flex-direction: column;
+    text-align: center;
+    padding: 2rem;
+}
+.scene-disaster h1 {
+    font-size: clamp(2rem, 5vw, 4.5rem);
+    font-weight: 900;
+    line-height: 1.1;
+    letter-spacing: -2px;
+    color: #fff;
+    opacity: 0;
+    transform: translateY(40px);
+    text-shadow: 0 0 60px rgba(100, 150, 255, 0.3);
+}
+.scene-disaster p {
+    font-size: clamp(0.9rem, 1.5vw, 1.2rem);
+    font-weight: 300;
+    color: rgba(180, 200, 240, 0.7);
+    max-width: 500px;
+    margin-top: 1rem;
+    opacity: 0;
+    transform: translateY(20px);
+}
+
+/* ═══════════════════════════════════════
+   SCENE 2: ACTION — Hope Emerging
+   ═══════════════════════════════════════ */
+.scene-action {
+    flex-direction: column;
+    text-align: center;
+}
+.scene-action h2 {
+    font-size: clamp(1.5rem, 3.5vw, 3rem);
+    font-weight: 800;
+    color: #fff;
+    letter-spacing: -1px;
+}
+.scene-action p {
+    font-size: 1rem;
+    color: rgba(255,255,255,0.6);
+    margin-top: 0.75rem;
+}
+
+/* Phone UI Mockup */
+.phone-ui {
+    width: 260px;
+    background: rgba(255,255,255,0.05);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 24px;
+    padding: 2rem 1.5rem;
+    margin-top: 2rem;
+    box-shadow: 0 0 80px rgba(0, 240, 255, 0.15), 0 20px 60px rgba(0,0,0,0.5);
+    pointer-events: all;
+}
+.phone-ui .phone-header {
+    text-align: center;
+    margin-bottom: 1.5rem;
+}
+.phone-ui .phone-header h4 {
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: var(--cin-neon-cyan);
+}
+.phone-ui .phone-amount {
+    text-align: center;
+    font-size: 2.5rem;
+    font-weight: 900;
+    color: #fff;
+    margin: 1rem 0;
+    text-shadow: 0 0 30px rgba(0, 240, 255, 0.4);
+}
+.phone-ui .phone-btn {
+    display: block;
+    width: 100%;
+    padding: 0.9rem;
+    border: none;
+    border-radius: 14px;
+    background: linear-gradient(135deg, var(--cin-neon-cyan), var(--cin-neon-purple));
+    color: #fff;
+    font-family: var(--cin-font);
+    font-size: 0.95rem;
+    font-weight: 700;
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+    animation: cin-btn-pulse 2s ease-in-out infinite;
+}
+@keyframes cin-btn-pulse {
+    0%, 100% { box-shadow: 0 0 20px rgba(0, 240, 255, 0.3); }
+    50% { box-shadow: 0 0 40px rgba(0, 240, 255, 0.6), 0 0 80px rgba(168, 85, 247, 0.3); }
+}
+
+/* ═══════════════════════════════════════
+   SCENE 3: BLOCKCHAIN — Trust & Transparency
+   ═══════════════════════════════════════ */
+.scene-blockchain {
+    flex-direction: column;
+    text-align: center;
+}
+.scene-blockchain h2 {
+    font-size: clamp(1.5rem, 3.5vw, 3rem);
+    font-weight: 800;
+    background: linear-gradient(135deg, var(--cin-neon-cyan), var(--cin-neon-purple));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+.scene-blockchain p {
+    font-size: 1rem;
+    color: rgba(255,255,255,0.5);
+    margin-top: 0.75rem;
+    max-width: 480px;
+}
+.scene-blockchain .node-labels {
+    display: flex;
+    gap: 1.5rem;
+    margin-top: 2rem;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+.scene-blockchain .node-label {
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(0, 240, 255, 0.2);
+    border-radius: 12px;
+    padding: 0.6rem 1.2rem;
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--cin-neon-cyan);
+    backdrop-filter: blur(8px);
+}
+
+/* ═══════════════════════════════════════
+   SCENE 4: IMPACT — Warmth & Hope
+   ═══════════════════════════════════════ */
+.scene-impact {
+    flex-direction: column;
+    text-align: center;
+}
+.scene-impact h2 {
+    font-size: clamp(1.5rem, 3.5vw, 3rem);
+    font-weight: 800;
+    color: var(--cin-warm-gold);
+}
+.scene-impact p {
+    font-size: 1rem;
+    color: rgba(255,255,255,0.6);
+    margin-top: 0.75rem;
+    max-width: 480px;
+}
+.scene-impact .impact-stats {
+    display: flex;
+    gap: 3rem;
+    margin-top: 2.5rem;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+.scene-impact .impact-stat {
+    text-align: center;
+}
+.scene-impact .impact-stat .num {
+    font-size: 2.5rem;
+    font-weight: 900;
+    color: #fff;
+    text-shadow: 0 0 30px rgba(240, 192, 64, 0.4);
+}
+.scene-impact .impact-stat .lbl {
+    font-size: 0.8rem;
+    color: rgba(255,255,255,0.5);
+    margin-top: 0.25rem;
+}
+
+/* ═══════════════════════════════════════
+   SCENE 5: CTA — Clean & Motivating
+   ═══════════════════════════════════════ */
+.scene-cta {
+    flex-direction: column;
+    text-align: center;
+    padding: 2rem;
+}
+.scene-cta h2 {
+    font-size: clamp(1.8rem, 4vw, 3.5rem);
+    font-weight: 900;
+    color: #fff;
+    letter-spacing: -1.5px;
+    line-height: 1.15;
+}
+.scene-cta p {
+    font-size: 1.05rem;
+    color: rgba(255,255,255,0.5);
+    margin-top: 1rem;
+    max-width: 420px;
+}
+.scene-cta .cta-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-top: 2.5rem;
+    padding: 1.1rem 3rem;
+    border: none;
+    border-radius: 999px;
+    background: linear-gradient(135deg, var(--cin-green), #40916c);
+    color: #fff;
+    font-family: var(--cin-font);
+    font-size: 1.15rem;
+    font-weight: 700;
+    cursor: pointer;
+    pointer-events: all;
+    text-decoration: none;
+    animation: cin-cta-glow 3s ease-in-out infinite;
+    transition: transform 0.3s, box-shadow 0.3s;
+}
+.scene-cta .cta-btn:hover {
+    transform: scale(1.06);
+    box-shadow: 0 0 60px rgba(45, 106, 79, 0.6);
+}
+@keyframes cin-cta-glow {
+    0%, 100% { box-shadow: 0 0 30px rgba(45, 106, 79, 0.4), 0 8px 32px rgba(0,0,0,0.3); }
+    50% { box-shadow: 0 0 60px rgba(45, 106, 79, 0.7), 0 8px 40px rgba(0,0,0,0.3); }
+}
+.scene-cta .cta-secondary {
+    display: inline-block;
+    margin-top: 1.5rem;
+    color: rgba(255,255,255,0.4);
+    font-size: 0.85rem;
+    text-decoration: none;
+    pointer-events: all;
+    transition: color 0.3s;
+}
+.scene-cta .cta-secondary:hover { color: #fff; }
+
+/* ─── RESPONSIVE ─── */
+@media (max-width: 768px) {
+    .cin-logo { font-size: 1rem; }
+    .cin-skip { font-size: 0.7rem; top: 1rem; right: 1rem; }
+    .phone-ui { width: 220px; padding: 1.5rem 1rem; }
+    .scene-impact .impact-stats { gap: 1.5rem; }
+}

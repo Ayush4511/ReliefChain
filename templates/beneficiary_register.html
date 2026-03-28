@@ -1,0 +1,67 @@
+{% extends 'base.html' %}
+{% block title %}Register as Beneficiary — ReliefChain{% endblock %}
+{% block content %}
+<div class="container" style="max-width:680px;padding-top:3rem;">
+    <div class="page-header" style="flex-direction:column;gap:0.5rem;text-align:center;">
+        <h1 class="page-title">Register for Aid 🆘</h1>
+        <p class="text-muted">Fill in your details. Our AI will calculate your trust score instantly.</p>
+    </div>
+    <div class="card">
+        <div style="background:linear-gradient(135deg,var(--primary),#1E1B4B);color:#fff;border-radius:var(--radius-sm);padding:1.25rem;margin-bottom:1.5rem;">
+            <div style="font-size:0.8rem;text-transform:uppercase;letter-spacing:0.05em;color:#94A3B8;margin-bottom:0.75rem;">🧪 Trust Score Algorithm Preview</div>
+            <div style="display:flex;gap:1rem;flex-wrap:wrap;font-size:0.85rem;">
+                <span>Base: <strong style="color:#818CF8;">+60</strong></span>
+                <span>New user: <strong style="color:#10B981;">+20</strong></span>
+                <span>Dup Aadhaar: <strong style="color:#EF4444;">−50</strong></span>
+                <span>Dup Phone: <strong style="color:#F59E0B;">−30</strong></span>
+            </div>
+        </div>
+        <form method="POST" action="{{ url_for('beneficiary_register') }}">
+            <div class="form-row">
+                <div class="form-group">
+                    <label class="form-label">Full Name</label>
+                    <input type="text" name="name" class="form-control" placeholder="Ramesh Kumar" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Aadhaar Number (12 digits)</label>
+                    <input type="text" name="aadhaar" class="form-control" placeholder="XXXX XXXX XXXX" maxlength="12" required>
+                    <div class="form-hint">Used for de-duplication & fraud detection</div>
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label class="form-label">Phone Number</label>
+                    <input type="tel" name="phone" class="form-control" placeholder="9XXXXXXXXX" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">State</label>
+                    <select name="state" class="form-control">
+                        {% for s in ['Kerala','Bihar','Gujarat','Odisha','Assam','Maharashtra','West Bengal','Rajasthan','UP','Tamil Nadu','Telangana','Karnataka','MP','Uttarakhand','Nepal','Other'] %}
+                        <option>{{ s }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Full Address</label>
+                <textarea name="address" class="form-control" placeholder="Village, District, District..."></textarea>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Select Campaign / Disaster</label>
+                <select name="campaign_id" class="form-control" required>
+                    {% for c in campaigns %}
+                    <option value="{{ c.id }}">{{ c.image_icon }} {{ c.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div style="background:#FEF3C7;border:1px solid rgba(245,158,11,0.3);border-radius:8px;padding:0.875rem;font-size:0.82rem;color:#92400E;margin-bottom:1.25rem;">
+                ℹ️ Duplicate Aadhaar or phone numbers will be flagged automatically. Fraudulent registrations are permanently blocked.
+            </div>
+            <button type="submit" class="btn btn-primary btn-block btn-lg">Submit Registration</button>
+        </form>
+    </div>
+    <div style="text-align:center;margin-top:1.5rem;">
+        <a href="{{ url_for('beneficiary_status') }}" style="color:var(--accent);font-weight:600;">Track Aid Status →</a>
+    </div>
+</div>
+{% endblock %}

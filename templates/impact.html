@@ -1,0 +1,65 @@
+{% extends 'base.html' %}
+{% block title %}Impact Tracker — ReliefChain{% endblock %}
+{% block content %}
+<div class="container" style="max-width:700px;padding-top:3rem;">
+    <h1 class="page-title">🌍 Donation Impact Tracker</h1>
+    <div class="card" style="margin-top:1.5rem;margin-bottom:2rem;">
+        <form method="POST" action="{{ url_for('impact') }}">
+            <div class="form-group">
+                <label class="form-label">Enter Transaction ID to see impact</label>
+                <input type="text" name="tx_id" class="form-control" placeholder="RC-XXXXXXXXXX" value="{{ request.form.get('tx_id','') }}">
+            </div>
+            <button type="submit" class="btn btn-primary btn-block">See My Impact →</button>
+        </form>
+    </div>
+
+    {% if donation %}
+    <div class="card">
+        <div style="text-align:center;margin-bottom:2rem;">
+            <div style="font-size:3rem;margin-bottom:0.5rem;">🌟</div>
+            <h2 style="font-size:1.5rem;font-weight:800;">Your donation made a difference!</h2>
+            <p class="text-muted">₹{{ '{:,.0f}'.format(donation.amount) }} contributed to {{ donation.campaign_name or 'Disaster Relief' }}</p>
+        </div>
+
+        <div style="background:linear-gradient(135deg,var(--accent-light),rgba(16,185,129,0.1));border-radius:var(--radius-sm);padding:1.5rem;text-align:center;margin-bottom:1.5rem;">
+            <div style="font-size:2.5rem;font-weight:900;color:var(--accent);">₹{{ '{:,.0f}'.format(donation.amount) }}</div>
+            <div class="text-muted text-sm" style="margin-top:0.25rem;">donated to {{ donation.campaign_name or (donation.category + ' Relief') }}</div>
+        </div>
+
+        <!-- Impact breakdown -->
+        {% set amt = donation.amount %}
+        <div class="grid-2" style="margin-bottom:1.5rem;gap:1rem;">
+            <div style="background:var(--success-light);border-radius:8px;padding:1rem;text-align:center;">
+                <div style="font-size:1.5rem;font-weight:800;color:var(--success);">{{ (amt // 500) }}</div>
+                <div class="text-sm text-muted">Meals Provided</div>
+            </div>
+            <div style="background:var(--accent-light);border-radius:8px;padding:1rem;text-align:center;">
+                <div style="font-size:1.5rem;font-weight:800;color:var(--accent);">{{ (amt // 2000) }}</div>
+                <div class="text-sm text-muted">Medical Kits</div>
+            </div>
+            <div style="background:var(--warning-light);border-radius:8px;padding:1rem;text-align:center;">
+                <div style="font-size:1.5rem;font-weight:800;color:var(--warning);">{{ (amt // 1500) }}</div>
+                <div class="text-sm text-muted">Shelter Days</div>
+            </div>
+            <div style="background:rgba(14,165,233,0.1);border-radius:8px;padding:1rem;text-align:center;">
+                <div style="font-size:1.5rem;font-weight:800;color:#0EA5E9;">{{ (amt // 300) }}</div>
+                <div class="text-sm text-muted">Liters of Water</div>
+            </div>
+        </div>
+
+        <div class="divider"></div>
+        <div class="grid-2" style="font-size:0.875rem;">
+            <div><span class="text-muted">Beneficiary:</span><strong style="margin-left:0.5rem;">{{ donation.beneficiary }}</strong></div>
+            <div><span class="text-muted">Region:</span><strong style="margin-left:0.5rem;">{{ donation.region or 'Field Operations' }}</strong></div>
+            <div><span class="text-muted">Status:</span><span class="badge badge-success" style="margin-left:0.5rem;">{{ donation.status|capitalize }}</span></div>
+            <div><span class="text-muted">Date:</span><strong style="margin-left:0.5rem;">{{ donation.timestamp[:10] }}</strong></div>
+        </div>
+    </div>
+    {% elif request.method == 'POST' %}
+    <div class="card" style="text-align:center;padding:3rem;">
+        <div style="font-size:3rem;">❌</div>
+        <h3>Transaction not found</h3>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

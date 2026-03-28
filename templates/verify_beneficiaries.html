@@ -1,0 +1,54 @@
+{% extends 'admin_base.html' %}
+{% block title %}Verify Beneficiaries — ReliefChain Admin{% endblock %}
+{% block content %}
+<div class="page-header">
+    <h1 class="page-title">Verify Beneficiaries</h1>
+    <div style="display:flex;gap:0.5rem;">
+        {% for s in ['pending','verified','rejected','flagged'] %}
+        <a href="?status={{ s }}" class="btn {% if status_filter==s %}btn-primary{% else %}btn-outline{% endif %} btn-sm">{{ s|capitalize }}</a>
+        {% endfor %}
+    </div>
+</div>
+<div class="card" style="padding:0;">
+    <div class="table-wrap" style="border:none;">
+        <table>
+            <thead><tr><th>Name</th><th>Aadhaar</th><th>Phone</th><th>State</th><th>Campaign</th><th>Trust Score</th><th>Status</th><th>Flag Reason</th><th>Actions</th></tr></thead>
+            <tbody>
+                {% for b in beneficiaries %}
+                <tr>
+                    <td><strong>{{ b.name }}</strong></td>
+                    <td class="td-mono">{{ b.aadhaar[:4] }}XXXXXXXX</td>
+                    <td class="td-mono">{{ b.phone[:3] }}XXXXXXX</td>
+                    <td>{{ b.state }}</td>
+                    <td class="text-sm">{{ b.campaign_name or '—' }}</td>
+                    <td>
+                        {% if b.trust_score >= 70 %}<span class="trust-badge high">{{ b.trust_score }}/100</span>
+                        {% elif b.trust_score >= 40 %}<span class="trust-badge medium">{{ b.trust_score }}/100</span>
+                        {% else %}<span class="trust-badge low">{{ b.trust_score }}/100</span>{% endif %}
+                    </td>
+                    <td>
+                        <span class="badge badge-{% if b.status=='verified' %}success{% elif b.status=='rejected' %}danger{% elif b.status=='flagged' %}warning{% else %}muted{% endif %}">
+                            {{ b.status|capitalize }}
+                        </span>
+                    </td>
+                    <td style="font-size:0.8rem;color:var(--danger);">{{ b.flag_reason or '—' }}</td>
+                    <td>
+                        <form method="POST" action="{{ url_for('verify_action') }}" style="display:inline;">
+                            <input type="hidden" name="ben_id" value="{{ b.id }}">
+                            {% if b.status != 'verified' %}
+                            <button name="action" value="approve" class="btn btn-success btn-sm">✅ Approve</button>
+                            {% endif %}
+                            {% if b.status != 'rejected' %}
+                            <button name="action" value="reject" class="btn btn-danger btn-sm">❌ Reject</button>
+                            {% endif %}
+                        </form>
+                    </td>
+                </tr>
+                {% else %}
+                <tr><td colspan="9" class="text-center text-muted" style="padding:2rem;">No beneficiaries in this category</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

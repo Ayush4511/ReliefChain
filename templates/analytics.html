@@ -1,0 +1,100 @@
+{% extends 'base.html' %}
+{% block title %}Analytics — ReliefChain{% endblock %}
+{% block content %}
+<div class="container" style="padding-top:2rem;">
+    <div class="page-header">
+        <h1 class="page-title">📊 Detailed Analytics</h1>
+        <a href="{{ url_for('public_dashboard') }}" class="btn btn-outline btn-sm">← Live Dashboard</a>
+    </div>
+
+    <div class="grid-2" style="margin-bottom:2rem;">
+        <div class="card">
+            <div class="card-header"><span class="card-title">📈 Daily Donations Trend</span></div>
+            <div class="chart-container"><canvas id="dailyChart"></canvas></div>
+        </div>
+        <div class="card">
+            <div class="card-header"><span class="card-title">🍩 By Campaign</span></div>
+            <div class="chart-container"><canvas id="campChart"></canvas></div>
+        </div>
+    </div>
+
+    <div class="grid-2" style="margin-bottom:2rem;">
+        <div class="card">
+            <div class="card-header"><span class="card-title">🗺️ Region-wise Donations</span></div>
+            <div class="chart-container"><canvas id="regionChart"></canvas></div>
+        </div>
+        <div class="card">
+            <div class="card-header"><span class="card-title">💳 Payment Methods</span></div>
+            <div class="chart-container"><canvas id="payChart"></canvas></div>
+        </div>
+    </div>
+
+    <!-- Data Tables -->
+    <div class="grid-2">
+        <div class="card">
+            <div class="card-header"><span class="card-title">By Campaign</span></div>
+            <div class="table-wrap" style="border:none;">
+                <table>
+                    <thead><tr><th>Campaign</th><th>Raised</th></tr></thead>
+                    <tbody>
+                        {% for r in by_campaign %}
+                        <tr><td>{{ r.name }}</td><td style="color:var(--success);font-weight:600;">₹{{ '{:,.0f}'.format(r.total) }}</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <div class="card">
+            <div class="card-header"><span class="card-title">By Payment Method</span></div>
+            <div class="table-wrap" style="border:none;">
+                <table>
+                    <thead><tr><th>Method</th><th>Count</th><th>Total</th></tr></thead>
+                    <tbody>
+                        {% for r in by_payment %}
+                        <tr><td><span class="badge badge-muted">{{ r.payment_method }}</span></td><td>{{ r.cnt }}</td><td style="color:var(--success);font-weight:600;">₹{{ '{:,.0f}'.format(r.total) }}</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+{% block scripts %}
+<script>
+const palette = ['#6366F1','#10B981','#F59E0B','#EF4444','#8B5CF6','#06B6D4'];
+const opts = { responsive:true, maintainAspectRatio:false, plugins:{legend:{labels:{font:{family:'Inter'}}}}, scales:{y:{beginAtZero:true,grid:{color:'#F1F5F9'}},x:{grid:{display:false}}} };
+const optsNoScales = { responsive:true, maintainAspectRatio:false, plugins:{legend:{labels:{font:{family:'Inter'}}}} };
+
+// Daily
+const dailyLabels = {{ daily|map(attribute='d')|list|tojson|safe }};
+const dailyData = {{ daily|map(attribute='s')|list|tojson|safe }};
+new Chart(document.getElementById('dailyChart'), {
+    type: 'line',
+    data: { labels: dailyLabels, datasets: [{ label: '₹ Donations', data: dailyData.map(Number),
+        borderColor:'#6366F1', backgroundColor:'rgba(99,102,241,0.1)', fill:true, tension:0.4, pointRadius:4 }] },
+    options: opts
+});
+// Campaign pie
+const campLabels = {{ by_campaign|map(attribute='name')|list|tojson|safe }};
+const campData = {{ by_campaign|map(attribute='total')|list|tojson|safe }};
+new Chart(document.getElementById('campChart'), {
+    type:'doughnut', data:{labels:campLabels, datasets:[{data:campData.map(Number), backgroundColor:palette, borderWidth:0}]},
+    options: optsNoScales
+});
+// Region bar
+const regLabels = {{ by_region|map(attribute='state')|list|tojson|safe }};
+const regData = {{ by_region|map(attribute='total')|list|tojson|safe }};
+new Chart(document.getElementById('regionChart'), {
+    type:'bar', data:{labels:regLabels, datasets:[{label:'Aid (₹)',data:regData.map(Number), backgroundColor:'rgba(16,185,129,0.7)', borderRadius:6}]},
+    options: opts
+});
+// Payment method
+const payLabels = {{ by_payment|map(attribute='payment_method')|list|tojson|safe }};
+const payData = {{ by_payment|map(attribute='cnt')|list|tojson|safe }};
+new Chart(document.getElementById('payChart'), {
+    type:'pie', data:{labels:payLabels, datasets:[{data:payData.map(Number), backgroundColor:palette, borderWidth:0}]},
+    options: optsNoScales
+});
+</script>
+{% endblock %}
