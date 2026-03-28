@@ -313,9 +313,6 @@
         // Fade scroll hint
         if (scrollHint) scrollHint.style.opacity = Math.max(0, 1 - p * 8);
 
-        // Fade in footer during CTA scene
-        if (cinFooter) cinFooter.style.opacity = Math.max(0, (p - 0.85) / 0.15);
-
         // ─── SCENE MAPPING ───
         const sceneRanges = [
             { start: 0, end: 0.2, key: 'disaster', idx: 0 },

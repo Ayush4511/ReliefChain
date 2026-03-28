@@ -1037,11 +1037,23 @@ def handle_connect():
     emit('connected', {'message': 'Connected to ReliefChain live feed'})
 
 # ─────────────────────────────────────────────
+# LIVE DATA GENERATOR
+# ─────────────────────────────────────────────
+def live_data_generator():
+    """Simulates real-time incoming donations to make the platform feel alive."""
+    while True:
+        time.sleep(random.randint(5, 15))
+        donors = ["Anonymous donor", "Blockchain Vault", "Relief Angel", "Tech Titans", "Global Aid"]
+        amount = random.randint(1, 50) * 1000
+        msg = f"✨ New donation of ₹{amount:,} received from {random.choice(donors)}!"
+        socketio.emit('new_donation', {'message': msg})
+
+# ─────────────────────────────────────────────
 # MAIN
 # ─────────────────────────────────────────────
 if __name__ == '__main__':
     init_db()
     # Start live data thread
-    # t = threading.Thread(target=live_data_generator, daemon=True)
-    # t.start()
+    t = threading.Thread(target=live_data_generator, daemon=True)
+    t.start()
     socketio.run(app, debug=True, port=5000, use_reloader=False, allow_unsafe_werkzeug=True)
